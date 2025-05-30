@@ -9,18 +9,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [hasSearched, setHasSearched] = useState(false)
+  const [page, setPage] = useState(1)
+  const pageSize = 50
 
-  const { data: products = [], isLoading, error, refetch } = useProductSearchWithEquivalences(searchQuery, hasSearched)
+  const { data, isLoading, error, refetch } = useProductSearchWithEquivalences({
+    query: searchQuery,
+    page,
+    pageSize,
+    enabled: hasSearched
+  })
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     setHasSearched(true)
+    setPage(1) // Resetar para primeira página em nova busca
     refetch()
   }
 
   const handleClearSearch = () => {
     setSearchQuery("")
     setHasSearched(false)
+    setPage(1)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
   }
 
   return (
@@ -46,11 +59,15 @@ export default function ProductsPage() {
 
       <div className="w-full overflow-hidden rounded-lg">
         <ProductsTable
-          products={products}
+          products={data?.data || []}
           loading={isLoading}
           hasSearched={hasSearched}
           searchQuery={searchQuery}
           error={error}
+          total={data?.total || 0}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
         />
       </div>
     </div>

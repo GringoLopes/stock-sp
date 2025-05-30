@@ -46,15 +46,12 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
 
   async findAllEquivalencesForCode(code: string): Promise<Equivalence[]> {
     try {
-      // Find equivalences where the code appears as either product_code or equivalent_code
+      // Usar a nova função otimizada para buscar equivalências diretas
       const { data, error } = await supabase
-        .from("equivalences")
-        .select("*")
-        .or(`product_code.eq.${code},equivalent_code.eq.${code}`)
-        .order("product_code")
+        .rpc('get_direct_equivalences', { search_code: code });
 
       if (error) {
-        console.error("Error fetching all equivalences for code:", error)
+        console.error("Error fetching equivalences for code:", error)
         return []
       }
 

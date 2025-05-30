@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import { LogOut, Package, User, Upload, Search, ArrowRightLeft, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/presentation/providers/AuthProvider"
@@ -69,28 +69,10 @@ export function Header() {
         </Link>
       ))}
     </nav>
-  )
-
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    // Função para verificar o tamanho da tela
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 400)
-    }
-
-    // Verifica no início
-    checkScreenSize()
-
-    // Adiciona listener para mudanças no tamanho da tela
-    window.addEventListener('resize', checkScreenSize)
-
-    // Remove o listener quando o componente desmontar
-    return () => window.removeEventListener('resize', checkScreenSize)
-  }, [])
+  )  
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="fixed top-0 z-50 w-full border-b bg-background ">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Mobile Navigation */}
@@ -103,8 +85,8 @@ export function Header() {
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col gap-4 py-4">
                 <div className="flex items-center gap-2 px-4">
-                  <Package className="h-6 w-6 text-primary" />
-                  <h2 className="text-lg font-semibold">Estoque Santos Penedo e cia LTDA.</h2>
+                  <Package className="h-8 w-8 text-primary" />
+                  <h2 className="text-lg font-bold">Filtros • Palhetas • Óleos Lubrificantes</h2>
                 </div>
                 <nav className="flex flex-col gap-2 px-2">
                   {filteredMenuItems.map((item) => {
@@ -134,10 +116,9 @@ export function Header() {
           </Sheet>
 
           {/* Logo */}
-          <div className="flex flex-1 items-center justify-center gap-2">
-            <Package className="h-8 w-8 md:h-6 md:w-6 text-primary" />
-            {!isMobile && (
-            <h1 className="text-xl md:text-xl font-bold">Santos Penedo</h1>)}
+          <div className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap min-w-0">
+            <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
+            <h1 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-primary truncate">Santos & Penedo</h1>
           </div>
 
           {/* Desktop Navigation */}

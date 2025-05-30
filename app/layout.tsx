@@ -9,9 +9,15 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Sistema de Consulta de Estoque",
-  description: "Sistema para consulta e gerenciamento de estoque de produtos",
-    generator: 'v0.dev'
+  title: "Santos & Penedo e Cia LTDA",
+  description: "Sistema de gestão de estoque - Filtros, Palhetas e Óleos Lubrificantes",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' }
+    ],
+    apple: '/apple-touch-icon.png',
+  }
 }
 
 export default function RootLayout({
@@ -21,6 +27,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body className={inter.className}>
         <QueryProvider>
           <AuthProvider>

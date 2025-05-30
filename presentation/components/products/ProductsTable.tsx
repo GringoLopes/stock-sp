@@ -150,7 +150,7 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
                   <TableHead className="w-[45%]">Aplicação</TableHead>
                 )}
                 <TableHead className="text-right w-[100px] md:w-[15%]">Preço</TableHead>
-                <TableHead className="text-center w-[100px] md:w-[15%]">Qtd</TableHead>
+                <TableHead className="text-center w-[100px] md:w-[15%]">Quantidade</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

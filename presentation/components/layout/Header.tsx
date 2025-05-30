@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { LogOut, Package, User, Upload, Search, ArrowRightLeft, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/presentation/providers/AuthProvider"
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useState } from "react"
 
 const menuItems = [
   {
@@ -70,6 +70,24 @@ export function Header() {
     </nav>
   )
 
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    // Função para verificar o tamanho da tela
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 400)
+    }
+
+    // Verifica no início
+    checkScreenSize()
+
+    // Adiciona listener para mudanças no tamanho da tela
+    window.addEventListener('resize', checkScreenSize)
+
+    // Remove o listener quando o componente desmontar
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-3">
@@ -117,7 +135,8 @@ export function Header() {
           {/* Logo */}
           <div className="flex flex-1 items-center justify-center gap-2">
             <Package className="h-8 w-8 md:h-6 md:w-6 text-primary" />
-            <h1 className="text-xl md:text-xl font-bold">Santos Penedo</h1>
+            {!isMobile && (
+            <h1 className="text-xl md:text-xl font-bold">Santos Penedo</h1>)}
           </div>
 
           {/* Desktop Navigation */}

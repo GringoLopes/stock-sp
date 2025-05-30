@@ -13,13 +13,11 @@ export class SupabaseUserRepository implements IUserRepository {
         .eq("active", true)
         .single()
 
-      if (error || !data) {
-        return null
-      }
+      if (error || !data) return null
 
-      return UserMapper.toDomain(data)
+      return this.mapToUser(data)
     } catch (error) {
-      console.error("Repository error:", error)
+      console.error("Error finding user by name:", error)
       return null
     }
   }
@@ -34,14 +32,22 @@ export class SupabaseUserRepository implements IUserRepository {
         .eq("active", true)
         .single()
 
-      if (error || !data) {
-        return null
-      }
+      if (error || !data) return null
 
-      return UserMapper.toDomain(data)
+      return this.mapToUser(data)
     } catch (error) {
-      console.error("Repository error:", error)
+      console.error("Error validating credentials:", error)
       return null
+    }
+  }
+
+  private mapToUser(data: any): User {
+    return {
+      id: data.id,
+      name: data.name,
+      active: data.active,
+      is_admin: data.is_admin,
+      createdAt: new Date(data.created_at)
     }
   }
 }

@@ -15,22 +15,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
 
 const menuItems = [
   {
     title: "Consultar Produtos",
     href: "/products",
     icon: Search,
+    adminOnly: false
   },
   {
     title: "Importar Produtos",
     href: "/products/import",
     icon: Upload,
+    adminOnly: true
   },
   {
     title: "Importar Equivalências",
     href: "/equivalences/import",
     icon: ArrowRightLeft,
+    adminOnly: true
   },
 ]
 
@@ -45,28 +49,25 @@ export function Header() {
     router.push("/login")
   }
 
-  const Navigation = () => (
-    <nav className="flex items-center gap-4">
-      {menuItems.map((item) => {
-        const isActive = pathname === item.href
-        const Icon = item.icon
+  const filteredMenuItems = menuItems.filter(item => !item.adminOnly || user?.is_admin)
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`
-              flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors
-              ${isActive 
-                ? "bg-primary text-primary-foreground" 
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"}
-            `}
-          >
-            <Icon className="h-4 w-4" />
-            <span>{item.title}</span>
-          </Link>
-        )
-      })}
+  const Navigation = () => (
+    <nav className="flex items-center space-x-4">
+      {filteredMenuItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            "flex items-center space-x-2 text-sm font-medium transition-colors",
+            pathname === item.href
+              ? "text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.title}</span>
+        </Link>
+      ))}
     </nav>
   )
 
@@ -106,7 +107,7 @@ export function Header() {
                   <h2 className="text-lg font-semibold">Estoque Santos Penedo e cia LTDA.</h2>
                 </div>
                 <nav className="flex flex-col gap-2 px-2">
-                  {menuItems.map((item) => {
+                  {filteredMenuItems.map((item) => {
                     const isActive = pathname === item.href
                     const Icon = item.icon
 

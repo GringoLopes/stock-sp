@@ -1,5 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/presentation/providers/AuthProvider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProductImport } from "@/presentation/components/products/ProductImport"
 import { ProductCSVImport } from "@/presentation/components/products/ProductCSVImport"
@@ -10,6 +13,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info, Upload, Database, FileText, ArrowRightLeft } from "lucide-react"
 
 export default function ImportPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!user?.is_admin) {
+      router.push("/products")
+    }
+  }, [user, router])
+
+  if (!user?.is_admin) {
+    return null
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">

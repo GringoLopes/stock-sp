@@ -1,11 +1,27 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/presentation/providers/AuthProvider"
 import { EquivalenceImport } from "@/presentation/components/equivalences/EquivalenceImport"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Info } from "lucide-react"
 
 export default function ImportEquivalencesPage() {
+  const { user } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!user?.is_admin) {
+      router.push("/products")
+    }
+  }, [user, router])
+
+  if (!user?.is_admin) {
+    return null
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">

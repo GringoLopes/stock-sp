@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -15,6 +16,25 @@ interface ProductsTableProps {
 }
 
 export function ProductsTable({ products, loading, hasSearched, searchQuery, error }: ProductsTableProps) {
+  // Hook para detectar se a tela é menor que 600px
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    // Função para verificar o tamanho da tela
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 600)
+    }
+
+    // Verifica no início
+    checkScreenSize()
+
+    // Adiciona listener para mudanças no tamanho da tela
+    window.addEventListener('resize', checkScreenSize)
+
+    // Remove o listener quando o componente desmontar
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -125,46 +145,43 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[200px]">Produto</TableHead>
-                <TableHead className="hidden md:table-cell min-w-[300px]">Aplicação</TableHead>
-                <TableHead className="min-w-[120px]">Preço</TableHead>
-                <TableHead className="min-w-[150px]">Estoque</TableHead>
+                <TableHead className="w-[200px] md:w-[25%]">Produto</TableHead>
+                {!isMobile && (
+                  <TableHead className="w-[45%]">Aplicação</TableHead>
+                )}
+                <TableHead className="text-right w-[100px] md:w-[15%]">Preço</TableHead>
+                <TableHead className="text-center w-[100px] md:w-[15%]">Qtd</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium w-[200px] md:w-[25%]">
                     <div className="space-y-1">
-                      <div className="font-bold text-gray-900 break-words">{product.product}</div>
-                      <div className="text-sm text-gray-500 md:hidden">
-                        {product.application ? (
-                          <span className="line-clamp-2" title={product.application}>
-                            {product.application}
-                          </span>
-                        ) : (
-                          "Sem aplicação especificada"
-                        )}
-                      </div>
+                      <div className="font-medium">{product.product}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {product.application ? (
-                      <span className="text-sm text-gray-700 line-clamp-2" title={product.application}>
-                        {product.application}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 italic">Sem aplicação especificada</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-semibold whitespace-nowrap">
+                  {!isMobile && (
+                    <TableCell className="w-[45%]">
+                      {product.application ? (
+                        <div className="max-w-[500px] overflow-hidden">
+                          <span className="text-sm text-gray-700 line-clamp-2 hover:line-clamp-none" title={product.application}>
+                            {product.application}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic">Sem aplicação especificada</span>
+                      )}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-right w-[100px] md:w-[15%]">
                     {product.price > 0 ? (
                       <span className="text-green-700">{formatPrice(product.price)}</span>
                     ) : (
                       <span className="text-gray-400">Consultar</span>
                     )}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="text-center w-[100px] md:w-[15%]">
                     {formatNumber(product.stock)}
                   </TableCell>
                 </TableRow>

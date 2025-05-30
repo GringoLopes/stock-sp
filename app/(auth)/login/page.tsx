@@ -66,7 +66,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Package className="h-12 w-12 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl">Sistema de Estoque</CardTitle>
+          <CardTitle className="text-2xl">Estoque Santos Penedo e cia LTDA.</CardTitle>
           <CardDescription>Faça login para acessar o sistema</CardDescription>
         </CardHeader>
         <CardContent>

@@ -53,9 +53,9 @@ export function ProductSearchForm({ onSearch, onClear, isLoading, currentQuery }
                 type="text"
                 placeholder="Digite o nome do produto, código ou aplicação..."
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={(e) => setInputValue(e.target.value.toUpperCase())}
                 onKeyPress={handleKeyPress}
-                className="pr-10 w-full"
+                className="pr-10 w-full uppercase"
                 disabled={isLoading}
               />
               {inputValue && (

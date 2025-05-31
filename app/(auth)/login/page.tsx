@@ -60,37 +60,37 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center  from-blue-50 via-gray-50 to-blue-50 bg-[url('/subtle-pattern.png')] px-4">
-      <Card className="w-full max-w-md border-2 shadow-lg backdrop-blur-sm bg-white/90">
+    <div className="min-h-screen flex items-center justify-center bg-background bg-[url('/subtle-pattern.png')] px-4">
+      <Card className="w-full max-w-md border-2 shadow-lg backdrop-blur-sm bg-card/90">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center mb-2">
-            <Package className="h-16 w-16 text-blue-700" />
+            <Package className="h-16 w-16 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
               Santos & Penedo e Cia LTDA.
             </CardTitle>
-            <p className="text-sm text-blue-700 font-medium mt-1">
+            <p className="text-sm text-primary font-medium mt-1">
               Filtros • Palhetas • Óleos Lubrificantes
             </p>
           </div>
-          <CardDescription className="text-gray-600">
+          <CardDescription className="text-muted-foreground">
             Acesse o sistema para consultar o estoque.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700 font-medium">Nome de usuário</Label>
+              <Label htmlFor="name" className="text-foreground font-medium">Nome de usuário</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-600 h-4 w-4" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary h-4 w-4" />
                 <Input
                   id="name"
                   type="text"
                   placeholder="Digite seu nome de usuário"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 border-input focus:border-primary focus:ring-primary"
                   required
                   disabled={loading}
                   autoComplete="username"
@@ -98,14 +98,14 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700 font-medium">Senha</Label>
+              <Label htmlFor="password" className="text-foreground font-medium">Senha</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="border-input focus:border-primary focus:ring-primary"
                 required
                 disabled={loading}
                 autoComplete="current-password"
@@ -113,7 +113,7 @@ export default function LoginPage() {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-blue-700 hover:bg-blue-800 text-white transition-colors"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
               disabled={loading}
             >
               {loading ? (

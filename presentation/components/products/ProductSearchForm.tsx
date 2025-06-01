@@ -38,7 +38,7 @@ export function ProductSearchForm({ onSearch, onClear, isLoading, currentQuery }
   }
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-2">
       <CardHeader className="px-4 sm:px-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Search className="h-5 w-5" />

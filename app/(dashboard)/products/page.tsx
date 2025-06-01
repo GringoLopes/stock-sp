@@ -41,10 +41,7 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="px-4 sm:px-6">
           <CardTitle>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Consulta de Produtos</h1>
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-              Pesquise produtos no estoque por nome, código, aplicação ou códigos equivalentes
-            </p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Consulta de Produtos</h1>            
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 sm:px-6">

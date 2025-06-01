@@ -137,7 +137,7 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
     <Card>
       <CardHeader className="px-4 sm:px-6">
         <CardTitle>Resultados da Busca</CardTitle>
-        <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row  items-start sm:items-center justify-between">
           <div className="text-sm text-gray-600">
             <strong>{products.length}</strong> produto{products.length !== 1 ? "s" : ""} encontrado
             {products.length !== 1 ? "s" : ""} para: <strong className="break-all">"{searchQuery}"</strong>
@@ -147,26 +147,26 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px] md:w-[25%]">Produto</TableHead>
+            <TableHeader >
+              <TableRow >
+                <TableHead className="w-[400px] md:w-[40%]">Produto</TableHead>
                 {!isMobile && (
-                  <TableHead className="w-[45%]">Aplicação</TableHead>
+                  <TableHead className="w-[30%]">Aplicação</TableHead>
                 )}
+                <TableHead className="text-center w-[100px] md:w-[15%]">Qtd</TableHead>
                 <TableHead className="text-right w-[100px] md:w-[15%]">Preço</TableHead>
-                <TableHead className="text-center w-[100px] md:w-[15%]">Quantidade</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.map((product) => (
-                <TableRow key={product.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium w-[200px] md:w-[25%]">
-                    <div className="space-y-1">
+                <TableRow key={product.id} className="hover:bg-gray-50 h-2">
+                  <TableCell className="font-medium w-[400px] md:w-[40%] py-1 whitespace-nowrap">
+                    <div className="space-y-0">
                       <div className="font-medium">{product.product}</div>
                     </div>
                   </TableCell>
                   {!isMobile && (
-                    <TableCell className="w-[45%]">
+                    <TableCell className="w-[30%] py-0">
                       {product.application ? (
                         <div className="max-w-[500px] overflow-hidden">
                           <span className="text-sm text-gray-700 line-clamp-2 hover:line-clamp-none" title={product.application}>
@@ -178,15 +178,15 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
                       )}
                     </TableCell>
                   )}
+                  <TableCell className="text-center w-[100px] md:w-[15%]">
+                    {formatNumber(product.stock)}
+                  </TableCell>
                   <TableCell className="text-right w-[100px] md:w-[15%]">
                     {product.price > 0 ? (
                       <span className="text-green-700">{formatPrice(product.price)}</span>
                     ) : (
                       <span className="text-gray-400">Consultar</span>
                     )}
-                  </TableCell>
-                  <TableCell className="text-center w-[100px] md:w-[15%]">
-                    {formatNumber(product.stock)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -1,5 +1,5 @@
-import type { UseCase, Result } from "@/shared/types/common"
-import { SessionManager } from "@/shared/infrastructure/session/session-manager"
+import { SessionManager } from "@/src/shared/infrastructure/session/session-manager"
+import { Result, UseCase } from "@/src/shared/types/common"
 
 export type LogoutRequest = {}
 

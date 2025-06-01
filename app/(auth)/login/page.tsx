@@ -60,7 +60,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background bg-[url('/subtle-pattern.png')] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md border-2 shadow-lg backdrop-blur-sm bg-card/90">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center mb-2">

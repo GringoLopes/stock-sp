@@ -1,6 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
 
+type ImportResponse = {
+  success: boolean
+  count: number
+  message: string
+  totalProcessed: number
+  parseErrors: number
+  insertErrors: number
+  details?: {
+    parseErrors: string[]
+    insertErrors: string[]
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { sql } = await request.json()
@@ -24,7 +37,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
 
     // Extrair os valores do INSERT
-    const insertMatch = sql.match(/VALUES\s*(.+)/is)
+    const insertMatch = sql.match(/VALUES\s*(.+)/i)
     if (!insertMatch) {
       return NextResponse.json({ error: "Formato de SQL inválido" }, { status: 400 })
     }
@@ -176,7 +189,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const response = {
+    const response: ImportResponse = {
       success: totalInserted > 0,
       count: totalInserted,
       message: `${totalInserted} produtos importados com sucesso`,

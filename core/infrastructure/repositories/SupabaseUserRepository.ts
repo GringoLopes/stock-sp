@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase/client"
 import type { IUserRepository } from "@/core/domain/repositories/IUserRepository"
-import type { User } from "@/core/domain/entities/User"
 import { UserMapper } from "@/core/application/dtos/UserDTO"
+import { User } from "@/src/shared/domain/entities/user.entity"
 
 export class SupabaseUserRepository implements IUserRepository {
   async findByName(name: string): Promise<User | null> {

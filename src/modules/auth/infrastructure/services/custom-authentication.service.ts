@@ -1,7 +1,7 @@
 import type { AuthenticationService } from "../../domain/services/authentication.service"
-import type { User } from "../../domain/entities/user.entity"
+import type { User } from "@/src/shared/domain/entities/user.entity"
 import type { UserRepository } from "../../domain/repositories/user.repository"
-import { SessionManager } from "@/shared/infrastructure/session/session-manager"
+import { SessionManager } from "@/src/shared/infrastructure/session/session-manager"
 
 export class CustomAuthenticationService implements AuthenticationService {
   constructor(private readonly userRepository: UserRepository) {}
@@ -32,5 +32,9 @@ export class CustomAuthenticationService implements AuthenticationService {
 
   isAuthenticated(): boolean {
     return SessionManager.isAuthenticated()
+  }
+
+  isAdmin(): boolean {
+    return SessionManager.isAdmin()
   }
 }

@@ -3,11 +3,11 @@
 import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import type { User } from "../../domain/entities/user.entity"
 import { SupabaseUserRepository } from "../../infrastructure/repositories/supabase-user.repository"
 import { CustomAuthenticationService } from "../../infrastructure/services/custom-authentication.service"
 import { LoginUseCase } from "../../application/use-cases/login.use-case"
 import { LogoutUseCase } from "../../application/use-cases/logout.use-case"
+import { User } from "@/src/shared/domain/entities/user.entity"
 
 interface AuthContextType {
   user: User | null

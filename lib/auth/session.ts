@@ -1,6 +1,7 @@
 "use client"
 
-import type { User } from "@/core/domain/entities/User"
+import { User } from "@/src/shared/domain/entities/user.entity"
+
 
 const SESSION_KEY = "stock_app_user"
 

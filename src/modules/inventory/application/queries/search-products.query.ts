@@ -1,6 +1,6 @@
-import type { Query } from "@/shared/types/common"
 import type { ProductRepository, ProductSearchCriteria } from "../../domain/repositories/product.repository"
 import type { Product } from "../../domain/entities/product.entity"
+import { Query } from "@/src/shared/types/common"
 
 export interface SearchProductsRequest extends ProductSearchCriteria {}
 

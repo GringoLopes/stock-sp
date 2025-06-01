@@ -1,7 +1,7 @@
 import { SupabaseUserRepository } from "@/core/infrastructure/repositories/SupabaseUserRepository"
 import { AuthenticateUserUseCase } from "@/core/application/use-cases/AuthenticateUserUseCase"
 import { SessionManager } from "@/lib/auth/session"
-import type { User } from "@/core/domain/entities/User"
+import { User } from "@/src/shared/domain/entities/user.entity"
 
 export class CustomAuthService {
   private userRepository = new SupabaseUserRepository()

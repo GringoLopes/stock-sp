@@ -13,9 +13,13 @@ interface ProductsTableProps {
   hasSearched: boolean
   searchQuery: string
   error?: any
+  total: number
+  page: number
+  pageSize: number
+  onPageChange: (page: number) => void
 }
 
-export function ProductsTable({ products, loading, hasSearched, searchQuery, error }: ProductsTableProps) {
+export function ProductsTable({ products, loading, hasSearched, searchQuery, error, total, page, pageSize, onPageChange }: ProductsTableProps) {
   // Hook para detectar se a tela é menor que 600px
   const [isMobile, setIsMobile] = useState(false)
 

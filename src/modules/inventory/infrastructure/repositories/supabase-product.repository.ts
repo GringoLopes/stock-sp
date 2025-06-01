@@ -1,8 +1,8 @@
 import type { ProductRepository, ProductSearchCriteria } from "../../domain/repositories/product.repository"
 import type { Product } from "../../domain/entities/product.entity"
 import { ProductEntity } from "../../domain/entities/product.entity"
-import { supabase } from "@/shared/infrastructure/database/supabase-client"
-import type { ID } from "@/shared/types/common"
+import { ID } from "@/src/shared/types/common"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-client"
 
 export class SupabaseProductRepository implements ProductRepository {
   async findAll(): Promise<Product[]> {
@@ -96,7 +96,7 @@ export class SupabaseProductRepository implements ProductRepository {
     return []
   }
 
-  async save(entity: Product): Promise<void> {
+  async save(entity: ProductEntity): Promise<void> {
     try {
       const { error } = await supabase.from("products").upsert({
         id: entity.id,

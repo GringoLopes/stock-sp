@@ -2,64 +2,50 @@ import type { IProductRepository } from "@/core/domain/repositories/IProductRepo
 import type { IEquivalenceRepository } from "@/core/domain/repositories/IEquivalenceRepository"
 import type { ProductWithEquivalences } from "@/core/domain/entities/ProductWithEquivalences"
 
+interface SearchProductsWithEquivalencesInput {
+  query: string
+  page: number
+  pageSize: number
+}
+
 export class SearchProductsWithEquivalencesUseCase {
   constructor(
     private productRepository: IProductRepository,
     private equivalenceRepository: IEquivalenceRepository,
   ) {}
 
-  async execute(query: string): Promise<ProductWithEquivalences[]> {
+  async execute({ query, page, pageSize }: SearchProductsWithEquivalencesInput): Promise<{
+    data: ProductWithEquivalences[],
+    total: number
+  }> {
     try {
-      // First, search for products directly
-      const directProducts = await this.productRepository.search(query)
-
-      // Then, find equivalences for the search query
-      const equivalences = await this.equivalenceRepository.findAllEquivalencesForCode(query)
-
-      // Get all related codes from equivalences
-      const relatedCodes = new Set<string>()
-      equivalences.forEach((eq) => {
-        relatedCodes.add(eq.productCode)
-        relatedCodes.add(eq.equivalentCode)
-      })
-
-      // Search for products using related codes
-      const equivalentProducts = []
-      for (const code of relatedCodes) {
-        const products = await this.productRepository.search(code)
-        equivalentProducts.push(...products)
-      }
-
-      // Combine and deduplicate products
-      const allProducts = [...directProducts, ...equivalentProducts]
-      const uniqueProducts = allProducts.filter(
-        (product, index, self) => index === self.findIndex((p) => p.id === product.id),
-      )
-
-      // Enhance each product with its equivalences
+      // Buscar produtos diretamente
+      const directSearchResult = await this.productRepository.search(query, page, pageSize)
       const productsWithEquivalences: ProductWithEquivalences[] = []
-
-      for (const product of uniqueProducts) {
-        const productEquivalences = await this.equivalenceRepository.findAllEquivalencesForCode(product.product)
-
-        // Get all related codes for this product
-        const allRelatedCodes = new Set<string>([product.product])
-        productEquivalences.forEach((eq) => {
-          allRelatedCodes.add(eq.productCode)
-          allRelatedCodes.add(eq.equivalentCode)
-        })
-
+      
+      // Para cada produto encontrado, buscar suas equivalências
+      for (const product of directSearchResult.data) {
+        // ✅ MUDANÇA AQUI: Usar findByProductCode para buscar apenas onde o produto é product_code
+        const productEquivalences = await this.equivalenceRepository.findByProductCode(product.product)
+        
+        // Coletar apenas os códigos equivalentes
+        const equivalentCodes = productEquivalences.map(eq => eq.equivalentCode)
+        
         productsWithEquivalences.push({
           ...product,
           equivalences: productEquivalences,
-          allRelatedCodes: Array.from(allRelatedCodes).filter((code) => code !== product.product),
+          allRelatedCodes: equivalentCodes // Apenas os códigos equivalentes
         })
       }
-
-      return productsWithEquivalences
+  
+      return {
+        data: productsWithEquivalences,
+        total: directSearchResult.total
+      }
+  
     } catch (error) {
       console.error("Error in SearchProductsWithEquivalencesUseCase:", error)
-      return []
+      return { data: [], total: 0 }
     }
   }
 }

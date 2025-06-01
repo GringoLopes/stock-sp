@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery } from '@tanstack/react-query';
 import { SupabaseProductRepository } from "@/core/infrastructure/repositories/SupabaseProductRepository"
 import { SupabaseEquivalenceRepository } from "@/core/infrastructure/repositories/SupabaseEquivalenceRepository"
 import { SearchProductsWithEquivalencesUseCase } from "@/core/application/use-cases/SearchProductsWithEquivalencesUseCase"
@@ -28,13 +28,17 @@ export function useProductSearchWithEquivalences({
       if (!query.trim()) {
         return { data: [], total: 0 }
       }
-      return await productRepository.search(query.trim(), page, pageSize)
+
+      return await searchUseCase.execute({
+        query: query.trim(),
+        page,
+        pageSize
+      })
     },
     enabled: enabled && !!query.trim(),
-    staleTime: 60 * 1000, // 1 minuto
-    gcTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 15 * 60 * 1000, // 15 minutos
-    keepPreviousData: true, // Manter dados anteriores durante a paginação
-    refetchOnWindowFocus: false, // Não recarregar ao focar a janela
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false
   })
 }
+

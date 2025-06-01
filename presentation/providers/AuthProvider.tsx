@@ -3,7 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import { CustomAuthService } from "@/core/infrastructure/services/CustomAuthService"
-import type { User } from "@/core/domain/entities/User"
+import { User } from "@/src/shared/domain/entities/user.entity"
 
 interface AuthContextType {
   user: User | null

@@ -1,4 +1,4 @@
-import type { User } from "@/modules/auth/domain/entities/user.entity"
+import type { User } from "@/src/shared/domain/entities/user.entity"
 
 const SESSION_KEY = "stock_app_user_session"
 
@@ -40,6 +40,9 @@ export class SessionManager {
 
       // Reconstruct dates
       sessionData.user.createdAt = new Date(sessionData.user.createdAt)
+      if (sessionData.user.updatedAt) {
+        sessionData.user.updatedAt = new Date(sessionData.user.updatedAt)
+      }
 
       return sessionData
     } catch (error) {
@@ -66,5 +69,10 @@ export class SessionManager {
   static getCurrentUser(): User | null {
     const session = this.getSession()
     return session?.user || null
+  }
+
+  static isAdmin(): boolean {
+    const user = this.getCurrentUser()
+    return user?.is_admin || false
   }
 }

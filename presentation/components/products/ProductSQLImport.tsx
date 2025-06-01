@@ -150,14 +150,14 @@ export function ProductSQLImport() {
                   </p>
                 )}
 
-                {(result.parseErrors || result.insertErrors) && (
+                {(result.parseErrors !== undefined || result.insertErrors !== undefined) && (
                   <div className="text-sm">
-                    {result.parseErrors > 0 && (
+                    {result.parseErrors !== undefined && result.parseErrors > 0 && (
                       <p className="text-yellow-600">
                         <strong>Erros de parsing:</strong> {result.parseErrors}
                       </p>
                     )}
-                    {result.insertErrors > 0 && (
+                    {result.insertErrors !== undefined && result.insertErrors > 0 && (
                       <p className="text-red-600">
                         <strong>Erros de inserção:</strong> {result.insertErrors}
                       </p>

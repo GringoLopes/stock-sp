@@ -1,7 +1,7 @@
-import type { UseCase, Result } from "@/shared/types/common"
 import type { UserRepository } from "../../domain/repositories/user.repository"
-import type { User } from "../../domain/entities/user.entity"
-import { SessionManager } from "@/shared/infrastructure/session/session-manager"
+import { User } from "@/src/shared/domain/entities/user.entity"
+import { SessionManager } from "@/src/shared/infrastructure/session/session-manager"
+import { Result, UseCase } from "@/src/shared/types/common"
 
 export interface LoginRequest {
   name: string

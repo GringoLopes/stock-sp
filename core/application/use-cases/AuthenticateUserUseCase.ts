@@ -1,5 +1,5 @@
 import type { IUserRepository } from "@/core/domain/repositories/IUserRepository"
-import type { User } from "@/core/domain/entities/User"
+import { User } from "@/src/shared/domain/entities/user.entity"
 
 export class AuthenticateUserUseCase {
   constructor(private userRepository: IUserRepository) {}

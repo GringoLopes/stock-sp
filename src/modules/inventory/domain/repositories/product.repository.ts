@@ -1,4 +1,4 @@
-import type { Repository } from "@/shared/types/common"
+import { Repository } from "@/src/shared/types/common"
 import type { Product } from "../entities/product.entity"
 
 export interface ProductSearchCriteria {

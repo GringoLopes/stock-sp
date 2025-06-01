@@ -2,8 +2,9 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/modules/auth/presentation/providers/auth.provider"
-import { LoadingSpinner } from "@/shared/presentation/components/ui/loading-spinner"
+import { LoadingSpinner } from "../shared/presentation/components/ui/loading-spinner"
+import { useAuth } from "../modules/auth/presentation/providers/auth.provider"
+
 
 export default function HomePage() {
   const { user, loading } = useAuth()

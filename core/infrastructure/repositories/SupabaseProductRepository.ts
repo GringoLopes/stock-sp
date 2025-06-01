@@ -2,8 +2,11 @@ import { supabase } from "@/lib/supabase/client"
 import type { IProductRepository } from "@/core/domain/repositories/IProductRepository"
 import type { Product } from "@/core/domain/entities/Product"
 import { ProductMapper } from "@/core/application/dtos/ProductDTO"
+import { SupabaseEquivalenceRepository } from "@/core/infrastructure/repositories/SupabaseEquivalenceRepository"
 
 export class SupabaseProductRepository implements IProductRepository {
+  private equivalenceRepository = new SupabaseEquivalenceRepository()
+  
   async findAll(): Promise<Product[]> {
     try {
       const { data, error } = await supabase.from("products").select("*").order("product")
@@ -60,17 +63,12 @@ export class SupabaseProductRepository implements IProductRepository {
       if (directMatches?.length) {
         const productCodes = directMatches.map(p => p.product);
         
-        // Buscar equivalências para cada produto encontrado
-        const { data: equivalences, error: equivError } = await supabase
-          .rpc('get_direct_equivalences', { 
-            search_code: productCodes[0] // Buscar equivalências do primeiro produto encontrado
-          });
+        // ✅ MUDANÇA AQUI: Usar findByProductCode ao invés de findAllEquivalencesForCode
+        const equivalences = await this.equivalenceRepository.findByProductCode(productCodes[0]);
 
-        if (!equivError && equivalences?.length) {
-          // Pegar os códigos equivalentes
-          const equivalentCodes = equivalences.map(eq => 
-            eq.product_code === productCodes[0] ? eq.equivalent_code : eq.product_code
-          );
+        if (equivalences?.length) {
+          // Pegar apenas os códigos equivalentes
+          const equivalentCodes = equivalences.map(eq => eq.equivalentCode);
 
           // Buscar os produtos equivalentes
           if (equivalentCodes.length) {
@@ -86,28 +84,21 @@ export class SupabaseProductRepository implements IProductRepository {
           }
         }
       } 
-      // Se não encontrou resultados diretos, buscar por equivalências
+      // Se não encontrou resultados diretos, buscar produtos onde o query é equivalent_code
       else {
-        const { data: equivalences, error: equivError } = await supabase
-          .rpc('get_direct_equivalences', { search_code: query });
+        // ✅ MUDANÇA AQUI: Buscar produtos onde o query é um código equivalente
+        const productCodes = await this.equivalenceRepository.findProductCodesByEquivalentCode(query);
 
-        if (!equivError && equivalences?.length) {
-          // Pegar os códigos equivalentes
-          const equivalentCodes = equivalences.map(eq => 
-            eq.product_code === query ? eq.equivalent_code : eq.product_code
-          );
+        if (productCodes.length) {
+          // Buscar esses produtos
+          const { data: products, error: productsError } = await supabase
+            .from("products")
+            .select("*")
+            .in("product", productCodes)
+            .order("product");
 
-          // Buscar os produtos equivalentes
-          if (equivalentCodes.length) {
-            const { data: equivProducts, error: productsError } = await supabase
-              .from("products")
-              .select("*")
-              .in("product", equivalentCodes)
-              .order("product");
-
-            if (!productsError && equivProducts) {
-              equivalentProducts.push(...equivProducts);
-            }
+          if (!productsError && products) {
+            allProducts.push(...products);
           }
         }
       }

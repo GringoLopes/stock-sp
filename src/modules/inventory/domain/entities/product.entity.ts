@@ -1,4 +1,4 @@
-import type { BaseEntity, ID } from "@/shared/types/common"
+import { BaseEntity, ID } from "@/src/shared/types/common"
 
 export interface Product extends BaseEntity {
   product: string

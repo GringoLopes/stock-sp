@@ -11,7 +11,7 @@ export interface ProductSearchCriteria {
 }
 
 export interface ProductRepository extends Repository<Product> {
-  findAll(): Promise<Product[]>
+  findAll(options?: PaginationOptions): Promise<PaginatedResult<Product>>
   findByCode(code: string): Promise<Product | null>
   findByBarcode(barcode: string): Promise<Product | null>
   search(criteria: ProductSearchCriteria): Promise<Product[]>

@@ -12,6 +12,7 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
         .select("*")
         .eq("product_code", productCode)
         .order("equivalent_code")
+        .limit(1000) // Limite para evitar sobrecarga
 
       if (error) {
         console.error("Error fetching equivalences by product code:", error)
@@ -33,6 +34,7 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
         .select("*")
         .eq("equivalent_code", equivalentCode)
         .order("product_code")
+        .limit(1000) // Limite para evitar sobrecarga
 
       if (error) {
         console.error("Error fetching equivalences by equivalent code:", error)
@@ -49,17 +51,46 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
   // Busca todas as equivalências diretas usando função RPC otimizada
   async findAllEquivalencesForCode(code: string): Promise<Equivalence[]> {
     try {
+      // Tentar usar a função RPC otimizada primeiro
       const { data, error } = await supabase
         .rpc("get_direct_equivalences", { search_code: code })
 
       if (error) {
-        console.error("Error fetching equivalences for code:", error)
-        return []
+        console.error("Error fetching equivalences for code via RPC:", error)
+        
+        // Fallback para consulta tradicional se RPC falhar
+        return this.findEquivalencesFallback(code)
       }
 
       return data?.map(EquivalenceMapper.toDomain) || []
     } catch (error) {
       console.error("Repository error:", error)
+      
+      // Fallback em caso de erro
+      return this.findEquivalencesFallback(code)
+    }
+  }
+
+  // Método fallback para busca de equivalências quando RPC não estiver disponível
+  private async findEquivalencesFallback(code: string): Promise<Equivalence[]> {
+    try {
+      console.log("Using fallback method for equivalences search")
+      
+      const { data, error } = await supabase
+        .from("equivalences")
+        .select("*")
+        .or(`product_code.eq.${code},equivalent_code.eq.${code}`)
+        .order("product_code, equivalent_code")
+        .limit(1000)
+
+      if (error) {
+        console.error("Error in fallback equivalences search:", error)
+        return []
+      }
+
+      return data?.map(EquivalenceMapper.toDomain) || []
+    } catch (error) {
+      console.error("Fallback repository error:", error)
       return []
     }
   }
@@ -71,6 +102,7 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
         .from("equivalences")
         .select("product_code")
         .eq("equivalent_code", equivalentCode)
+        .limit(1000) // Limite para evitar sobrecarga
 
       if (error) {
         console.error("Error fetching product codes by equivalent code:", error)

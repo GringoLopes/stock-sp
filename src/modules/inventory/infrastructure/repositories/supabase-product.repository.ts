@@ -4,26 +4,91 @@ import { ProductEntity } from "../../domain/entities/product.entity"
 import { ID } from "@/src/shared/types/common"
 import { supabase } from "@/src/shared/infrastructure/database/supabase-client"
 
+// Tipos para paginação
+export interface PaginationOptions {
+  page?: number
+  limit?: number
+}
+
+export interface PaginatedResult<T> {
+  data: T[]
+  totalCount: number
+  hasMore: boolean
+  currentPage: number
+  totalPages: number
+}
+
+// Estender o tipo de critérios de busca para incluir limit
+interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
+  limit?: number
+}
+
 export class SupabaseProductRepository implements ProductRepository {
+  // Método original mantido para compatibilidade
   async findAll(): Promise<Product[]> {
+    // Para manter compatibilidade, vamos usar paginação com limite alto
+    const result = await this.findAllPaginated({ page: 1, limit: 10000 })
+    return result.data
+  }
+
+  // Nova versão paginada para melhor performance
+  async findAllPaginated(options: PaginationOptions = {}): Promise<PaginatedResult<Product>> {
+    const { page = 1, limit = 100 } = options
+    const offset = (page - 1) * limit
+
     try {
-      const { data, error } = await supabase.from("products").select("*").order("product")
+      // Busca os dados com paginação
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("product")
+        .range(offset, offset + limit - 1)
 
       if (error) {
-        console.error("Error fetching products:", error)
-        return []
+        console.error("Error fetching paginated products:", error)
+        throw error
       }
 
-      return data?.map(this.mapToEntity) || []
+      // Busca o total de registros para calcular paginação
+      const { count, error: countError } = await supabase
+        .from("products")
+        .select("*", { count: 'exact', head: true })
+
+      if (countError) {
+        console.error("Error counting products:", countError)
+        throw countError
+      }
+
+      const totalCount = count || 0
+      const totalPages = Math.ceil(totalCount / limit)
+      const hasMore = page < totalPages
+
+      return {
+        data: data?.map(this.mapToEntity) || [],
+        totalCount,
+        hasMore,
+        currentPage: page,
+        totalPages
+      }
     } catch (error) {
       console.error("Repository error:", error)
-      return []
+      return {
+        data: [],
+        totalCount: 0,
+        hasMore: false,
+        currentPage: page,
+        totalPages: 0
+      }
     }
   }
 
   async findById(id: ID): Promise<Product | null> {
     try {
-      const { data, error } = await supabase.from("products").select("*").eq("id", id).single()
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .single()
 
       if (error || !data) return null
 
@@ -37,7 +102,11 @@ export class SupabaseProductRepository implements ProductRepository {
   async findByCode(code: string): Promise<Product | null> {
     // Since we no longer have a code field, we'll search by product name
     try {
-      const { data, error } = await supabase.from("products").select("*").eq("product", code).single()
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("product", code)
+        .single()
 
       if (error || !data) return null
 
@@ -59,6 +128,8 @@ export class SupabaseProductRepository implements ProductRepository {
       let query = supabase.from("products").select("*")
 
       if (criteria.query) {
+        // Usar busca otimizada com índice GIN quando disponível
+        // Se não tiver o índice, usar ILIKE normal
         query = query.ilike("product", `%${criteria.query}%`)
       }
 
@@ -69,6 +140,10 @@ export class SupabaseProductRepository implements ProductRepository {
       if (criteria.maxPrice !== undefined) {
         query = query.lte("price", criteria.maxPrice)
       }
+
+      // Adicionar paginação implícita para evitar resultados muito grandes
+      const limit = 500 // Limite padrão para evitar sobrecarga
+      query = query.limit(limit)
 
       const { data, error } = await query.order("product")
 
@@ -119,7 +194,10 @@ export class SupabaseProductRepository implements ProductRepository {
 
   async delete(id: ID): Promise<void> {
     try {
-      const { error } = await supabase.from("products").delete().eq("id", id)
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
 
       if (error) {
         throw new Error(`Failed to delete product: ${error.message}`)

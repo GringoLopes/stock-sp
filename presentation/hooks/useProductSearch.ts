@@ -1,7 +1,10 @@
 "use client"
 
+import { useState } from "react"
+import { useDebounce } from "@/hooks/useDebounce"
+import { SupabaseProductRepository } from "@/src/modules/inventory/infrastructure/repositories/supabase-product.repository"
+import type { Product } from "@/src/modules/inventory/domain/entities/product.entity"
 import { useQuery } from "@tanstack/react-query"
-import { SupabaseProductRepository } from "@/core/infrastructure/repositories/SupabaseProductRepository"
 
 const productRepository = new SupabaseProductRepository()
 

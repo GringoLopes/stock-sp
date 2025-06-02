@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import { CustomAuthService } from "@/core/infrastructure/services/CustomAuthService"
+import { AuthService } from "@/src/modules/auth/infrastructure/services/auth.service"
 import { User } from "@/src/shared/domain/entities/user.entity"
 
 interface AuthContextType {
@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const authService = new CustomAuthService()
+  const authService = new AuthService()
 
   useEffect(() => {
     const checkUser = () => {

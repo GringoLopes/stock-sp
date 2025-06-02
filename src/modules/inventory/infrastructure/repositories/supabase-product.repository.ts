@@ -2,8 +2,10 @@ import type { ProductRepository, ProductSearchCriteria } from "../../domain/repo
 import type { Product } from "../../domain/entities/product.entity"
 import { ProductEntity } from "../../domain/entities/product.entity"
 import { ID } from "@/src/shared/types/common"
-import { supabase } from "@/src/shared/infrastructure/database/supabase-client"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import { PaginatedResult, PaginationOptions } from "@/src/shared/types/pagination"
+import { ProductMapper } from "../../application/dtos/product.dto"
+import { SupabaseEquivalenceRepository } from "./supabase-equivalence.repository"
 
 // Estender o tipo de critérios de busca para incluir limit
 interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
@@ -11,75 +13,122 @@ interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
 }
 
 export class SupabaseProductRepository implements ProductRepository {
-  async findAll(options?: PaginationOptions): Promise<PaginatedResult<Product>> {
-    return this.findAllPaginated(options || { page: 1, limit: 100 })
-  }
-
-  // Nova versão paginada para melhor performance
-  async findAllPaginated(options: PaginationOptions = {}): Promise<PaginatedResult<Product>> {
-    const { page = 1, limit = 100 } = options
-    const offset = (page - 1) * limit
-
+  private equivalenceRepository = new SupabaseEquivalenceRepository()
+  
+  async findAll(): Promise<Product[]> {
     try {
-      // Busca os dados com paginação
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("product")
-        .range(offset, offset + limit - 1)
+      const supabaseClient = await supabase.from("products")
+      const { data, error } = await supabaseClient.select("*").order("product")
 
       if (error) {
-        console.error("Error fetching paginated products:", error)
-        throw error
+        console.error("Error fetching products:", error)
+        return []
       }
 
-      // Busca o total de registros para calcular paginação
-      const { count, error: countError } = await supabase
-        .from("products")
-        .select("*", { count: 'exact', head: true })
-
-      if (countError) {
-        console.error("Error counting products:", countError)
-        throw countError
-      }
-
-      const totalCount = count || 0
-      const totalPages = Math.ceil(totalCount / limit)
-      const hasMore = page < totalPages
-
-      return {
-        data: data?.map(this.mapToEntity) || [],
-        totalCount,
-        hasMore,
-        currentPage: page,
-        totalPages
-      }
+      return data?.map(ProductMapper.toDomain) || []
     } catch (error) {
       console.error("Repository error:", error)
-      return {
-        data: [],
-        totalCount: 0,
-        hasMore: false,
-        currentPage: page,
-        totalPages: 0
-      }
+      return []
     }
   }
 
-  async findById(id: ID): Promise<Product | null> {
+  async findById(id: string | number): Promise<Product | null> {
     try {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", id)
-        .single()
+      const supabaseClient = await supabase.from("products")
+      const { data, error } = await supabaseClient.select("*").eq("id", id).single()
 
-      if (error || !data) return null
+      if (error || !data) {
+        return null
+      }
 
-      return this.mapToEntity(data)
+      return ProductMapper.toDomain(data)
     } catch (error) {
       console.error("Repository error:", error)
       return null
+    }
+  }
+
+  async search(query: string, page = 1, pageSize = 50): Promise<{ data: Product[], total: number }> {
+    try {
+      const start = (page - 1) * pageSize;
+      const supabaseClient = await supabase.from("products")
+
+      // Primeiro, buscar produtos que correspondem diretamente à consulta
+      const { data: directMatches, error: directError, count } = await supabaseClient
+        .select("*", { count: "exact" })
+        .ilike("product", `%${query}%`)
+        .range(start, start + pageSize - 1)
+        .order("product");
+
+      if (directError) {
+        console.error("Error searching products:", directError)
+        return { data: [], total: 0 }
+      }
+
+      // Buscar equivalências para os produtos encontrados
+      const allProducts = [...(directMatches || [])];
+      const equivalentProducts: any[] = [];
+
+      // Se encontrou resultados diretos, buscar suas equivalências
+      if (directMatches?.length) {
+        const productCodes = directMatches.map(p => p.product);
+        
+        const equivalences = await this.equivalenceRepository.findByProductCode(productCodes[0]);
+
+        if (equivalences?.length) {
+          // Pegar apenas os códigos equivalentes
+          const equivalentCodes = equivalences.map(eq => eq.equivalentCode);
+
+          // Buscar os produtos equivalentes
+          if (equivalentCodes.length) {
+            const supabaseClient = await supabase.from("products")
+            const { data: equivProducts, error: productsError } = await supabaseClient
+              .select("*")
+              .in("product", equivalentCodes)
+              .order("product");
+
+            if (!productsError && equivProducts) {
+              equivalentProducts.push(...equivProducts);
+            }
+          }
+        }
+      } 
+      // Se não encontrou resultados diretos, buscar produtos onde o query é equivalent_code
+      else {
+        const productCodes = await this.equivalenceRepository.findProductCodesByEquivalentCode(query);
+
+        if (productCodes.length) {
+          // Buscar esses produtos
+          const supabaseClient = await supabase.from("products")
+          const { data: products, error: productsError } = await supabaseClient
+            .select("*")
+            .in("product", productCodes)
+            .order("product");
+
+          if (!productsError && products) {
+            allProducts.push(...products);
+          }
+        }
+      }
+
+      // Combinar produtos diretos e equivalentes, removendo duplicatas
+      const uniqueProducts = [...allProducts, ...equivalentProducts]
+        .filter((product, index, self) => 
+          index === self.findIndex((p) => p.product === product.product)
+        );
+
+      // Aplicar paginação no resultado final
+      const start_index = (page - 1) * pageSize;
+      const end_index = start_index + pageSize;
+      const paginatedProducts = uniqueProducts.slice(start_index, end_index);
+
+      return {
+        data: paginatedProducts.map(ProductMapper.toDomain),
+        total: uniqueProducts.length
+      }
+    } catch (error) {
+      console.error("Repository error:", error)
+      return { data: [], total: 0 }
     }
   }
 
@@ -105,42 +154,6 @@ export class SupabaseProductRepository implements ProductRepository {
     // Since we no longer have a barcode field, this method is not applicable
     // We'll return null
     return null
-  }
-
-  async search(criteria: ProductSearchCriteria): Promise<Product[]> {
-    try {
-      let query = supabase.from("products").select("*")
-
-      if (criteria.query) {
-        // Usar busca otimizada com índice GIN quando disponível
-        // Se não tiver o índice, usar ILIKE normal
-        query = query.ilike("product", `%${criteria.query}%`)
-      }
-
-      if (criteria.minPrice !== undefined) {
-        query = query.gte("price", criteria.minPrice)
-      }
-
-      if (criteria.maxPrice !== undefined) {
-        query = query.lte("price", criteria.maxPrice)
-      }
-
-      // Adicionar paginação implícita para evitar resultados muito grandes
-      const limit = 500 // Limite padrão para evitar sobrecarga
-      query = query.limit(limit)
-
-      const { data, error } = await query.order("product")
-
-      if (error) {
-        console.error("Error searching products:", error)
-        return []
-      }
-
-      return data?.map(this.mapToEntity) || []
-    } catch (error) {
-      console.error("Repository error:", error)
-      return []
-    }
   }
 
   async findByCategory(category: string): Promise<Product[]> {

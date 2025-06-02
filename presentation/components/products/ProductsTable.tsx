@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Search, AlertCircle, Package } from "lucide-react"
-import type { ProductWithEquivalences } from "@/core/domain/entities/ProductWithEquivalences"
+import type { ProductWithEquivalences } from "@/src/modules/inventory/domain/entities/product-with-equivalences.entity"
 
 interface ProductsTableProps {
   products: ProductWithEquivalences[]

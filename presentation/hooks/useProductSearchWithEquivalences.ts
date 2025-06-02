@@ -1,9 +1,12 @@
 "use client"
 
+import { useState } from "react"
+import { useDebounce } from "@/hooks/useDebounce"
+import { SupabaseProductRepository } from "@/src/modules/inventory/infrastructure/repositories/supabase-product.repository"
+import { SupabaseEquivalenceRepository } from "@/src/modules/inventory/infrastructure/repositories/supabase-equivalence.repository"
+import { SearchProductsWithEquivalencesUseCase } from "@/src/modules/inventory/application/use-cases/search-products-with-equivalences.use-case"
+import type { ProductWithEquivalences } from "@/src/modules/inventory/domain/entities/product-with-equivalences.entity"
 import { useQuery } from '@tanstack/react-query';
-import { SupabaseProductRepository } from "@/core/infrastructure/repositories/SupabaseProductRepository"
-import { SupabaseEquivalenceRepository } from "@/core/infrastructure/repositories/SupabaseEquivalenceRepository"
-import { SearchProductsWithEquivalencesUseCase } from "@/core/application/use-cases/SearchProductsWithEquivalencesUseCase"
 
 const productRepository = new SupabaseProductRepository()
 const equivalenceRepository = new SupabaseEquivalenceRepository()

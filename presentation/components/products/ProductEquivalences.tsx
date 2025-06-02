@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowRightLeft } from "lucide-react"
-import type { Equivalence } from "@/core/domain/entities/Equivalence"
+import type { Equivalence } from "@/src/modules/inventory/domain/entities/equivalence.entity"
 
 interface ProductEquivalencesProps {
   equivalences: Equivalence[]

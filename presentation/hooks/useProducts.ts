@@ -1,8 +1,9 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { SupabaseProductRepository } from "@/core/infrastructure/repositories/SupabaseProductRepository"
-import { GetAllProductsUseCase } from "@/core/application/use-cases/GetAllProductsUseCase"
+import { SupabaseProductRepository } from "@/src/modules/inventory/infrastructure/repositories/supabase-product.repository"
+import { GetAllProductsUseCase } from "@/src/modules/inventory/application/use-cases/get-all-products.use-case"
+import type { Product } from "@/src/modules/inventory/domain/entities/product.entity"
 
 const productRepository = new SupabaseProductRepository()
 const getAllProductsUseCase = new GetAllProductsUseCase(productRepository)

@@ -1,10 +1,13 @@
 import { BaseEntity, ID } from "@/src/shared/types/common"
 
-export interface Product extends BaseEntity {
+export interface Product {
+  id: string | number
   product: string
   stock: number
   price: number
   application?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export class ProductEntity implements Product {

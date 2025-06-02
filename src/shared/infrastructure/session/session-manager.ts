@@ -17,7 +17,8 @@ export class SessionManager {
     const sessionData: SessionData = { user, expiresAt }
 
     try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData))
+      const sessionJson = JSON.stringify(sessionData)
+      localStorage.setItem(SESSION_KEY, sessionJson)
     } catch (error) {
       console.error("Failed to save session:", error)
     }

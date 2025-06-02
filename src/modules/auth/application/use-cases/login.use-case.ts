@@ -54,6 +54,7 @@ export class LoginUseCase implements UseCase<LoginRequest, LoginResponse> {
         },
       }
     } catch (error) {
+      console.error('Error during login:', error)
       return {
         success: false,
         error: error instanceof Error ? error : new Error("Erro interno do servidor"),

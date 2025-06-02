@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { Loader2 } from "lucide-react"
 import { Header } from "@/presentation/components/layout/Header"
 

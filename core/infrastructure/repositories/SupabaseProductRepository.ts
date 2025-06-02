@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import type { IProductRepository } from "@/core/domain/repositories/IProductRepository"
 import type { Product } from "@/core/domain/entities/Product"
 import { ProductMapper } from "@/core/application/dtos/ProductDTO"
@@ -9,7 +9,8 @@ export class SupabaseProductRepository implements IProductRepository {
   
   async findAll(): Promise<Product[]> {
     try {
-      const { data, error } = await supabase.from("products").select("*").order("product")
+      const supabaseClient = await supabase.from("products")
+      const { data, error } = await supabaseClient.select("*").order("product")
 
       if (error) {
         console.error("Error fetching products:", error)
@@ -25,7 +26,8 @@ export class SupabaseProductRepository implements IProductRepository {
 
   async findById(id: string | number): Promise<Product | null> {
     try {
-      const { data, error } = await supabase.from("products").select("*").eq("id", id).single()
+      const supabaseClient = await supabase.from("products")
+      const { data, error } = await supabaseClient.select("*").eq("id", id).single()
 
       if (error || !data) {
         return null
@@ -41,10 +43,10 @@ export class SupabaseProductRepository implements IProductRepository {
   async search(query: string, page = 1, pageSize = 50): Promise<{ data: Product[], total: number }> {
     try {
       const start = (page - 1) * pageSize;
+      const supabaseClient = await supabase.from("products")
 
       // Primeiro, buscar produtos que correspondem diretamente à consulta
-      const { data: directMatches, error: directError, count } = await supabase
-        .from("products")
+      const { data: directMatches, error: directError, count } = await supabaseClient
         .select("*", { count: "exact" })
         .ilike("product", `%${query}%`)
         .range(start, start + pageSize - 1)
@@ -72,8 +74,8 @@ export class SupabaseProductRepository implements IProductRepository {
 
           // Buscar os produtos equivalentes
           if (equivalentCodes.length) {
-            const { data: equivProducts, error: productsError } = await supabase
-              .from("products")
+            const supabaseClient = await supabase.from("products")
+            const { data: equivProducts, error: productsError } = await supabaseClient
               .select("*")
               .in("product", equivalentCodes)
               .order("product");
@@ -91,8 +93,8 @@ export class SupabaseProductRepository implements IProductRepository {
 
         if (productCodes.length) {
           // Buscar esses produtos
-          const { data: products, error: productsError } = await supabase
-            .from("products")
+          const supabaseClient = await supabase.from("products")
+          const { data: products, error: productsError } = await supabaseClient
             .select("*")
             .in("product", productCodes)
             .order("product");

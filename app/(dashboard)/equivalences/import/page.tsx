@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { EquivalenceImport } from "@/presentation/components/equivalences/EquivalenceImport"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"

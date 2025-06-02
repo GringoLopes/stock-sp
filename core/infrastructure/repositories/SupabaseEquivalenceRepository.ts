@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import type { IEquivalenceRepository } from "@/core/domain/repositories/IEquivalenceRepository"
 import type { Equivalence } from "@/core/domain/entities/Equivalence"
 import { EquivalenceMapper } from "@/core/application/dtos/EquivalenceDTO"
@@ -7,8 +7,8 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
   // Busca equivalências pelo código principal do produto
   async findByProductCode(productCode: string): Promise<Equivalence[]> {
     try {
-      const { data, error } = await supabase
-        .from("equivalences")
+      const supabaseClient = await supabase.from("equivalences")
+      const { data, error } = await supabaseClient
         .select("*")
         .eq("product_code", productCode)
         .order("equivalent_code")
@@ -29,8 +29,8 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
   // Busca equivalências usando o código equivalente
   async findByEquivalentCode(equivalentCode: string): Promise<Equivalence[]> {
     try {
-      const { data, error } = await supabase
-        .from("equivalences")
+      const supabaseClient = await supabase.from("equivalences")
+      const { data, error } = await supabaseClient
         .select("*")
         .eq("equivalent_code", equivalentCode)
         .order("product_code")
@@ -76,8 +76,8 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
     try {
       console.log("Using fallback method for equivalences search")
       
-      const { data, error } = await supabase
-        .from("equivalences")
+      const supabaseClient = await supabase.from("equivalences")
+      const { data, error } = await supabaseClient
         .select("*")
         .or(`product_code.eq.${code},equivalent_code.eq.${code}`)
         .order("product_code, equivalent_code")
@@ -98,8 +98,8 @@ export class SupabaseEquivalenceRepository implements IEquivalenceRepository {
   // ✅ Busca apenas os códigos dos produtos que são equivalentes ao código informado
   async findProductCodesByEquivalentCode(equivalentCode: string): Promise<string[]> {
     try {
-      const { data, error } = await supabase
-        .from("equivalences")
+      const supabaseClient = await supabase.from("equivalences")
+      const { data, error } = await supabaseClient
         .select("product_code")
         .eq("equivalent_code", equivalentCode)
         .limit(1000) // Limite para evitar sobrecarga

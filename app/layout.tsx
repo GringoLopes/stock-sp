@@ -1,12 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/presentation/providers/AuthProvider"
-import { QueryProvider } from "@/presentation/providers/QueryProvider"
-import { Toaster } from "@/components/ui/toaster"
-
-const inter = Inter({ subsets: ["latin"] })
+import ClientLayout from "./client-layout"
 
 export const metadata: Metadata = {
   title: "Santos & Penedo e Cia LTDA",
@@ -32,14 +27,9 @@ export default function RootLayout({
         <link rel="icon" href="/icon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className={inter.className}>
-        <QueryProvider>
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </QueryProvider>
-      </body>
+      <ClientLayout>
+        {children}
+      </ClientLayout>
     </html>
   )
 }

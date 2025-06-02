@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ProductImport } from "@/presentation/components/products/ProductImport"
 import { ProductCSVImport } from "@/presentation/components/products/ProductCSVImport"

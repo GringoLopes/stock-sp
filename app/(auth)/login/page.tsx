@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, Droplets, User, Package } from "lucide-react"
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [name, setName] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -34,8 +34,8 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const success = await signIn(name.trim(), password)
-      if (success) {
+      const result = await login(name.trim(), password)
+      if (result.success) {
         toast({
           title: "Login realizado com sucesso!",
           description: "Redirecionando para o sistema...",
@@ -44,7 +44,7 @@ export default function LoginPage() {
       } else {
         toast({
           title: "Erro no login",
-          description: "Nome de usuário ou senha incorretos.",
+          description: result.error || "Nome de usuário ou senha incorretos.",
           variant: "destructive",
         })
       }

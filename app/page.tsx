@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { Loader2 } from "lucide-react"
 
 export default function HomePage() {

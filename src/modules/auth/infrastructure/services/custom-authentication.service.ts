@@ -11,7 +11,17 @@ export class CustomAuthenticationService implements AuthenticationService {
       const user = await this.userRepository.validateCredentials(name, password)
 
       if (user && user.active) {
+        // Define o usuário na sessão local
         SessionManager.setSession(user)
+
+        // Atualiza o último login
+        try {
+          await this.userRepository.updateLastLogin(user.id)
+        } catch (error) {
+          console.error('Error updating last login:', error)
+          // Não falha o login por causa disso
+        }
+        
         return user
       }
 
@@ -27,7 +37,11 @@ export class CustomAuthenticationService implements AuthenticationService {
   }
 
   async logout(): Promise<void> {
-    SessionManager.clearSession()
+    try {
+      SessionManager.clearSession()
+    } catch (error) {
+      console.error('Error during logout:', error)
+    }
   }
 
   isAuthenticated(): boolean {

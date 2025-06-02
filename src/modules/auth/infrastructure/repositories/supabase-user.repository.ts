@@ -1,6 +1,6 @@
 import type { UserRepository } from "../../domain/repositories/user.repository"
 import { User, UserEntity } from "@/src/shared/domain/entities/user.entity"
-import { supabase } from "@/src/shared/infrastructure/database/supabase-client"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import { ID } from "@/src/shared/types/common"
 
 export class SupabaseUserRepository implements UserRepository {
@@ -8,7 +8,7 @@ export class SupabaseUserRepository implements UserRepository {
     try {
       const { data, error } = await supabase
         .from("custom_users")
-        .select("*")
+        .select("id, name, active, is_admin, created_at")
         .eq("id", id)
         .eq("active", true)
         .single()
@@ -26,7 +26,7 @@ export class SupabaseUserRepository implements UserRepository {
     try {
       const { data, error } = await supabase
         .from("custom_users")
-        .select("*")
+        .select("id, name, active, is_admin, created_at")
         .eq("name", name)
         .eq("active", true)
         .single()
@@ -43,16 +43,18 @@ export class SupabaseUserRepository implements UserRepository {
   async validateCredentials(name: string, password: string): Promise<User | null> {
     try {
       const { data, error } = await supabase
-        .from("custom_users")
-        .select("*")
-        .eq("name", name)
-        .eq("password", password)
-        .eq("active", true)
-        .single()
+        .rpc('authenticate_user', { 
+          p_name: name, 
+          p_password: password 
+        })
 
-      if (error || !data) return null
+      if (error) throw error
 
-      return this.mapToEntity(data)
+      if (data?.success && data.user) {
+        return this.mapToEntity(data.user)
+      }
+
+      return null
     } catch (error) {
       console.error("Error validating credentials:", error)
       return null
@@ -103,7 +105,7 @@ export class SupabaseUserRepository implements UserRepository {
         id: entity.id,
         name: entity.name,
         active: entity.active,
-        is_admin: entity.is_admin, // Adicione esta linha
+        is_admin: entity.is_admin,
         created_at: entity.createdAt.toISOString(),
         updated_at: entity.updatedAt?.toISOString() || new Date().toISOString()
       })
@@ -138,7 +140,7 @@ export class SupabaseUserRepository implements UserRepository {
       id: data.id,
       name: data.name,
       active: data.active,
-      is_admin: data.is_admin || false, 
+      is_admin: data.is_admin || false,
       createdAt: new Date(data.created_at),
       updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
     })

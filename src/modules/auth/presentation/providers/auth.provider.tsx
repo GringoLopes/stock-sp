@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: result.error.message }
       }
     } catch (error) {
+      console.error('Login error:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : "Erro inesperado",

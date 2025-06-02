@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/client"
+import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import type { IUserRepository } from "@/core/domain/repositories/IUserRepository"
 import { UserMapper } from "@/core/application/dtos/UserDTO"
 import { User } from "@/src/shared/domain/entities/user.entity"
@@ -25,16 +25,18 @@ export class SupabaseUserRepository implements IUserRepository {
   async validateCredentials(name: string, password: string): Promise<User | null> {
     try {
       const { data, error } = await supabase
-        .from("custom_users")
-        .select("*")
-        .eq("name", name)
-        .eq("password", password)
-        .eq("active", true)
-        .single()
+        .rpc('authenticate_user', { 
+          p_name: name, 
+          p_password: password 
+        })
 
-      if (error || !data) return null
+      if (error) throw error
 
-      return this.mapToUser(data)
+      if (data?.success && data.user) {
+        return this.mapToUser(data.user)
+      }
+
+      return null
     } catch (error) {
       console.error("Error validating credentials:", error)
       return null

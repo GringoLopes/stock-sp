@@ -18,4 +18,7 @@ export interface ProductRepository extends Repository<Product> {
   search(criteria: ProductSearchCriteria): Promise<Product[]>
   findByCategory(category: string): Promise<Product[]>
   findByBrand(brand: string): Promise<Product[]>
+  findAll(): Promise<Product[]>
+  findById(id: string | number): Promise<Product | null>
+  search(query: string, page?: number, pageSize?: number): Promise<{ data: Product[]; total: number }>
 }

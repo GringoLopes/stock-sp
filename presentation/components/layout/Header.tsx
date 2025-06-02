@@ -3,7 +3,7 @@
 import {  useState } from "react"
 import { LogOut, Package, User, Upload, Search, ArrowRightLeft, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/presentation/providers/AuthProvider"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import {
@@ -39,13 +39,13 @@ const menuItems = [
 ]
 
 export function Header() {
-  const { user, signOut } = useAuth()
+  const { user, logout } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
   const handleSignOut = async () => {
-    await signOut()
+    await logout()
     router.push("/login")
   }
 

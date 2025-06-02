@@ -1,6 +1,6 @@
 import { Repository } from "@/src/shared/types/common"
 import type { Product } from "../entities/product.entity"
-import { PaginatedResult, PaginationOptions } from "../../infrastructure/repositories/supabase-product.repository"
+import { PaginatedResult, PaginationOptions } from "@/src/shared/types/pagination"
 
 export interface ProductSearchCriteria {
   query?: string

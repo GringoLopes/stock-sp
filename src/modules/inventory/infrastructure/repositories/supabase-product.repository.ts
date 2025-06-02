@@ -3,20 +3,7 @@ import type { Product } from "../../domain/entities/product.entity"
 import { ProductEntity } from "../../domain/entities/product.entity"
 import { ID } from "@/src/shared/types/common"
 import { supabase } from "@/src/shared/infrastructure/database/supabase-client"
-
-// Tipos para paginação
-export interface PaginationOptions {
-  page?: number
-  limit?: number
-}
-
-export interface PaginatedResult<T> {
-  data: T[]
-  totalCount: number
-  hasMore: boolean
-  currentPage: number
-  totalPages: number
-}
+import { PaginatedResult, PaginationOptions } from "@/src/shared/types/pagination"
 
 // Estender o tipo de critérios de busca para incluir limit
 interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
@@ -24,11 +11,8 @@ interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
 }
 
 export class SupabaseProductRepository implements ProductRepository {
-  // Método original mantido para compatibilidade
-  async findAll(): Promise<Product[]> {
-    // Para manter compatibilidade, vamos usar paginação com limite alto
-    const result = await this.findAllPaginated({ page: 1, limit: 10000 })
-    return result.data
+  async findAll(options?: PaginationOptions): Promise<PaginatedResult<Product>> {
+    return this.findAllPaginated(options || { page: 1, limit: 100 })
   }
 
   // Nova versão paginada para melhor performance

@@ -40,7 +40,10 @@ export default function LoginPage() {
           title: "Login realizado com sucesso!",
           description: "Redirecionando para o sistema...",
         })
-        router.push(result.redirectTo || "/products")
+        
+        setTimeout(() => {
+          router.push(result.redirectTo || "/products")
+        }, 100)
       } else {
         toast({
           title: "Erro no login",

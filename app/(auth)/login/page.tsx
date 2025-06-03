@@ -1,15 +1,15 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Droplets, User, Package } from "lucide-react"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
+import { Loader2, Package, User } from "lucide-react"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useState } from "react"
 
 export default function LoginPage() {
   const [name, setName] = useState("")
@@ -40,7 +40,7 @@ export default function LoginPage() {
           title: "Login realizado com sucesso!",
           description: "Redirecionando para o sistema...",
         })
-        router.push("/products")
+        router.push(result.redirectTo || "/products")
       } else {
         toast({
           title: "Erro no login",

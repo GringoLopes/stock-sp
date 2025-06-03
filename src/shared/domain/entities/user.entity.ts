@@ -5,6 +5,8 @@ export interface User extends BaseEntity {
   name: string
   active: boolean
   is_admin: boolean
+  must_change_password?: boolean
+  password_changed_at?: Date
 }
 
 export class UserEntity implements User {
@@ -15,6 +17,8 @@ export class UserEntity implements User {
     public readonly is_admin: boolean,
     public readonly createdAt: Date,
     public readonly updatedAt?: Date,
+    public readonly must_change_password?: boolean,
+    public readonly password_changed_at?: Date,
   ) {
     this.validateName(name)
   }
@@ -36,6 +40,8 @@ export class UserEntity implements User {
     is_admin: boolean
     createdAt: Date
     updatedAt?: Date
+    must_change_password?: boolean
+    password_changed_at?: Date
   }): UserEntity {
     return new UserEntity(
       props.id, 
@@ -43,7 +49,9 @@ export class UserEntity implements User {
       props.active, 
       props.is_admin,
       props.createdAt, 
-      props.updatedAt
+      props.updatedAt,
+      props.must_change_password,
+      props.password_changed_at
     )
   }
 
@@ -61,5 +69,9 @@ export class UserEntity implements User {
 
   canAccessAdminPanel(): boolean {
     return this.isActive() && this.isAdmin()
+  }
+
+  mustChangePassword(): boolean {
+    return this.must_change_password === true
   }
 }

@@ -1,7 +1,7 @@
-import type { UserRepository } from "../../domain/repositories/user.repository"
 import { User } from "@/src/shared/domain/entities/user.entity"
 import { SessionManager } from "@/src/shared/infrastructure/session/session-manager"
 import { Result, UseCase } from "@/src/shared/types/common"
+import type { UserRepository } from "../../domain/repositories/user.repository"
 
 export interface LoginRequest {
   name: string
@@ -11,6 +11,8 @@ export interface LoginRequest {
 export interface LoginResponse {
   user: User
   success: boolean
+  redirectTo?: string
+  requirePasswordChange?: boolean
 }
 
 export class LoginUseCase implements UseCase<LoginRequest, LoginResponse> {
@@ -46,11 +48,25 @@ export class LoginUseCase implements UseCase<LoginRequest, LoginResponse> {
       // Set session
       SessionManager.setSession(user)
 
+      // Verifica se o usuário precisa trocar a senha
+      if (user.must_change_password) {
+        return {
+          success: true,
+          data: {
+            user,
+            success: true,
+            redirectTo: '/change-password',
+            requirePasswordChange: true,
+          },
+        }
+      }
+
       return {
         success: true,
         data: {
           user,
           success: true,
+          redirectTo: '/products',
         },
       }
     } catch (error) {

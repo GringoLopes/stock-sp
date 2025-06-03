@@ -1,7 +1,7 @@
-import type { UserRepository } from "../../domain/repositories/user.repository"
 import { User, UserEntity } from "@/src/shared/domain/entities/user.entity"
 import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import { ID } from "@/src/shared/types/common"
+import type { UserRepository } from "../../domain/repositories/user.repository"
 
 export class SupabaseUserRepository implements UserRepository {
   async findById(id: ID): Promise<User | null> {
@@ -99,6 +99,38 @@ export class SupabaseUserRepository implements UserRepository {
     }
   }
 
+  // Novo método: atualizar senha
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .rpc('change_user_password', { 
+          p_user_id: userId, 
+          p_current_password: currentPassword,
+          p_new_password: newPassword 
+        })
+
+      if (error) {
+        console.error("Error changing password:", error)
+        return false
+      }
+
+      // Verifica o resultado da função
+      if (data && data.success) {
+        return true
+      }
+
+      // Se houver uma mensagem de erro específica, loga ela
+      if (data && data.message) {
+        console.error("Password change failed:", data.message)
+      }
+
+      return false
+    } catch (error) {
+      console.error("Error in changePassword:", error)
+      return false
+    }
+  }
+
   async save(entity: User): Promise<void> {
     try {
       const { error } = await supabase.from("custom_users").upsert({
@@ -142,7 +174,9 @@ export class SupabaseUserRepository implements UserRepository {
       active: data.active,
       is_admin: data.is_admin || false,
       createdAt: new Date(data.created_at),
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,
+      must_change_password: data.must_change_password || false,
+      password_changed_at: data.password_changed_at ? new Date(data.password_changed_at) : undefined
     })
   }
 }

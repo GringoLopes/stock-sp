@@ -1,13 +1,12 @@
 import type { User } from "@/src/shared/domain/entities/user.entity"
 
-const SESSION_KEY = "stock_app_user_session"
-
 export interface SessionData {
   user: User
   expiresAt: number
 }
 
 export class SessionManager {
+  private static readonly SESSION_KEY = "stock_app_user"
   private static readonly EXPIRY_HOURS = 24
 
   static setSession(user: User): void {
@@ -18,7 +17,7 @@ export class SessionManager {
 
     try {
       const sessionJson = JSON.stringify(sessionData)
-      localStorage.setItem(SESSION_KEY, sessionJson)
+      localStorage.setItem(this.SESSION_KEY, sessionJson)
     } catch (error) {
       console.error("Failed to save session:", error)
     }
@@ -28,7 +27,7 @@ export class SessionManager {
     if (typeof window === "undefined") return null
 
     try {
-      const sessionJson = localStorage.getItem(SESSION_KEY)
+      const sessionJson = localStorage.getItem(this.SESSION_KEY)
       if (!sessionJson) return null
 
       const sessionData: SessionData = JSON.parse(sessionJson)
@@ -40,9 +39,14 @@ export class SessionManager {
       }
 
       // Reconstruct dates
-      sessionData.user.createdAt = new Date(sessionData.user.createdAt)
-      if (sessionData.user.updatedAt) {
-        sessionData.user.updatedAt = new Date(sessionData.user.updatedAt)
+      if (sessionData.user) {
+        sessionData.user.createdAt = new Date(sessionData.user.createdAt)
+        if (sessionData.user.updatedAt) {
+          sessionData.user.updatedAt = new Date(sessionData.user.updatedAt)
+        }
+        if (sessionData.user.password_changed_at) {
+          sessionData.user.password_changed_at = new Date(sessionData.user.password_changed_at)
+        }
       }
 
       return sessionData
@@ -57,7 +61,7 @@ export class SessionManager {
     if (typeof window === "undefined") return
 
     try {
-      localStorage.removeItem(SESSION_KEY)
+      localStorage.removeItem(this.SESSION_KEY)
     } catch (error) {
       console.error("Failed to clear session:", error)
     }

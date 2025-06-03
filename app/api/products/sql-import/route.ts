@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Comando SQL é obrigatório" }, { status: 400 })
     }
 
+    const supabase = await createServerClient()
+
     // Validar que é apenas um comando INSERT
     const trimmedSQL = sql.trim().toLowerCase()
     if (!trimmedSQL.startsWith("insert into products")) {
@@ -33,8 +35,6 @@ export async function POST(request: NextRequest) {
     if (dangerousKeywords.some((keyword) => trimmedSQL.includes(keyword))) {
       return NextResponse.json({ error: "Comando contém palavras-chave não permitidas" }, { status: 400 })
     }
-
-    const supabase = createServerClient()
 
     // Extrair os valores do INSERT
     const insertMatch = sql.match(/VALUES\s*(.+)/i)

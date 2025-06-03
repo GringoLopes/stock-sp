@@ -1,10 +1,8 @@
 import type { ProductRepository, ProductSearchCriteria } from "../../domain/repositories/product.repository"
-import type { Product } from "../../domain/entities/product.entity"
 import { ProductEntity } from "../../domain/entities/product.entity"
 import { ID } from "@/src/shared/types/common"
 import { supabase } from "@/src/shared/infrastructure/database/supabase-wrapper"
 import { PaginatedResult, PaginationOptions } from "@/src/shared/types/pagination"
-import { ProductMapper } from "../../application/dtos/product.dto"
 import { SupabaseEquivalenceRepository } from "./supabase-equivalence.repository"
 
 // Estender o tipo de critérios de busca para incluir limit
@@ -15,24 +13,52 @@ interface ExtendedProductSearchCriteria extends ProductSearchCriteria {
 export class SupabaseProductRepository implements ProductRepository {
   private equivalenceRepository = new SupabaseEquivalenceRepository()
   
-  async findAll(): Promise<Product[]> {
+  async findAll(options?: PaginationOptions): Promise<PaginatedResult<ProductEntity>> {
     try {
+      const page = options?.page || 1
+      const limit = options?.limit || 50
+      const start = (page - 1) * limit
+
       const supabaseClient = await supabase.from("products")
-      const { data, error } = await supabaseClient.select("*").order("product")
+      const { data, error, count } = await supabaseClient
+        .select("*", { count: "exact" })
+        .range(start, start + limit - 1)
+        .order("product")
 
       if (error) {
         console.error("Error fetching products:", error)
-        return []
+        return {
+          data: [],
+          totalCount: 0,
+          currentPage: page,
+          totalPages: 0,
+          hasMore: false
+        }
       }
 
-      return data?.map(ProductMapper.toDomain) || []
+      const totalCount = count || 0
+      const totalPages = Math.ceil(totalCount / limit)
+
+      return {
+        data: data?.map(this.mapToEntity) || [],
+        totalCount,
+        currentPage: page,
+        totalPages,
+        hasMore: page < totalPages
+      }
     } catch (error) {
       console.error("Repository error:", error)
-      return []
+      return {
+        data: [],
+        totalCount: 0,
+        currentPage: options?.page || 1,
+        totalPages: 0,
+        hasMore: false
+      }
     }
   }
 
-  async findById(id: string | number): Promise<Product | null> {
+  async findById(id: string | number): Promise<ProductEntity | null> {
     try {
       const supabaseClient = await supabase.from("products")
       const { data, error } = await supabaseClient.select("*").eq("id", id).single()
@@ -41,14 +67,14 @@ export class SupabaseProductRepository implements ProductRepository {
         return null
       }
 
-      return ProductMapper.toDomain(data)
+      return this.mapToEntity(data)
     } catch (error) {
       console.error("Repository error:", error)
       return null
     }
   }
 
-  async search(query: string, page = 1, pageSize = 50): Promise<{ data: Product[], total: number }> {
+  async search(query: string, page = 1, pageSize = 50): Promise<{ data: ProductEntity[], total: number }> {
     try {
       const start = (page - 1) * pageSize;
       const supabaseClient = await supabase.from("products")
@@ -123,7 +149,7 @@ export class SupabaseProductRepository implements ProductRepository {
       const paginatedProducts = uniqueProducts.slice(start_index, end_index);
 
       return {
-        data: paginatedProducts.map(ProductMapper.toDomain),
+        data: paginatedProducts.map(this.mapToEntity),
         total: uniqueProducts.length
       }
     } catch (error) {
@@ -132,8 +158,7 @@ export class SupabaseProductRepository implements ProductRepository {
     }
   }
 
-  async findByCode(code: string): Promise<Product | null> {
-    // Since we no longer have a code field, we'll search by product name
+  async findByCode(code: string): Promise<ProductEntity | null> {
     try {
       const { data, error } = await supabase
         .from("products")
@@ -150,21 +175,15 @@ export class SupabaseProductRepository implements ProductRepository {
     }
   }
 
-  async findByBarcode(barcode: string): Promise<Product | null> {
-    // Since we no longer have a barcode field, this method is not applicable
-    // We'll return null
+  async findByBarcode(barcode: string): Promise<ProductEntity | null> {
     return null
   }
 
-  async findByCategory(category: string): Promise<Product[]> {
-    // Since we no longer have a category field, this method is not applicable
-    // We'll return an empty array
+  async findByCategory(category: string): Promise<ProductEntity[]> {
     return []
   }
 
-  async findByBrand(brand: string): Promise<Product[]> {
-    // Since we no longer have a brand field, this method is not applicable
-    // We'll return an empty array
+  async findByBrand(brand: string): Promise<ProductEntity[]> {
     return []
   }
 

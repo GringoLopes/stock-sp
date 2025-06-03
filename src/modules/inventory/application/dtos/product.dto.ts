@@ -1,13 +1,14 @@
 import type { Product } from "../../domain/entities/product.entity"
+import { ID } from "@/src/shared/types/common"
 
 export interface ProductDTO {
-  id: string | number
+  id: ID
   product: string
   stock: number
   price: number
   application?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export class ProductMapper {
@@ -19,7 +20,7 @@ export class ProductMapper {
       price: dto.price,
       application: dto.application,
       createdAt: new Date(dto.created_at),
-      updatedAt: new Date(dto.updated_at),
+      updatedAt: dto.updated_at ? new Date(dto.updated_at) : undefined,
     }
   }
 
@@ -31,7 +32,7 @@ export class ProductMapper {
       price: domain.price,
       application: domain.application,
       created_at: domain.createdAt.toISOString(),
-      updated_at: domain.updatedAt.toISOString(),
+      updated_at: domain.updatedAt?.toISOString(),
     }
   }
 } 

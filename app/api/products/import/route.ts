@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase/client"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
     if (!products || !Array.isArray(products)) {
       return NextResponse.json({ error: "Dados de produtos inválidos" }, { status: 400 })
     }
+
+    const supabase = await createServerClient()
 
     // Função para validar e limitar valores numéricos
     const validateAndParsePrice = (price: any): number => {

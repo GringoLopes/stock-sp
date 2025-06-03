@@ -1,5 +1,6 @@
 import { Repository } from "@/src/shared/types/common"
 import type { Product } from "../entities/product.entity"
+import { ProductEntity } from "../entities/product.entity"
 import { PaginatedResult, PaginationOptions } from "@/src/shared/types/pagination"
 
 export interface ProductSearchCriteria {
@@ -11,14 +12,12 @@ export interface ProductSearchCriteria {
   active?: boolean
 }
 
-export interface ProductRepository extends Repository<Product> {
-  findAll(options?: PaginationOptions): Promise<PaginatedResult<Product>>
-  findByCode(code: string): Promise<Product | null>
-  findByBarcode(barcode: string): Promise<Product | null>
-  search(criteria: ProductSearchCriteria): Promise<Product[]>
-  findByCategory(category: string): Promise<Product[]>
-  findByBrand(brand: string): Promise<Product[]>
-  findAll(): Promise<Product[]>
-  findById(id: string | number): Promise<Product | null>
-  search(query: string, page?: number, pageSize?: number): Promise<{ data: Product[]; total: number }>
+export interface ProductRepository extends Repository<ProductEntity> {
+  findAll(options?: PaginationOptions): Promise<PaginatedResult<ProductEntity>>
+  findByCode(code: string): Promise<ProductEntity | null>
+  findByBarcode(barcode: string): Promise<ProductEntity | null>
+  findByCategory(category: string): Promise<ProductEntity[]>
+  findByBrand(brand: string): Promise<ProductEntity[]>
+  findById(id: string | number): Promise<ProductEntity | null>
+  search(query: string, page?: number, pageSize?: number): Promise<{ data: ProductEntity[]; total: number }>
 }

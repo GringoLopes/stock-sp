@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
 
     // Inserir equivalências em lotes
     const batchSize = 500

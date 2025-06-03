@@ -2,12 +2,17 @@ import type { ProductRepository, ProductSearchCriteria } from "../../domain/repo
 import type { Product } from "../../domain/entities/product.entity"
 import { Query } from "@/src/shared/types/common"
 
-export interface SearchProductsRequest extends ProductSearchCriteria {}
+export interface SearchProductsRequest {
+  query: string
+  page?: number
+  pageSize?: number
+}
 
 export interface SearchProductsResponse {
   products: Product[]
   total: number
-  criteria: ProductSearchCriteria
+  page: number
+  pageSize: number
 }
 
 export class SearchProductsQuery implements Query<SearchProductsRequest, SearchProductsResponse> {
@@ -15,19 +20,22 @@ export class SearchProductsQuery implements Query<SearchProductsRequest, SearchP
 
   async execute(request: SearchProductsRequest): Promise<SearchProductsResponse> {
     try {
-      const products = await this.productRepository.search(request)
+      const { query = "", page = 1, pageSize = 50 } = request
+      const result = await this.productRepository.search(query, page, pageSize)
 
       return {
-        products,
-        total: products.length,
-        criteria: request,
+        products: result.data,
+        total: result.total,
+        page,
+        pageSize
       }
     } catch (error) {
       console.error("Error searching products:", error)
       return {
         products: [],
         total: 0,
-        criteria: request,
+        page: request.page || 1,
+        pageSize: request.pageSize || 50
       }
     }
   }

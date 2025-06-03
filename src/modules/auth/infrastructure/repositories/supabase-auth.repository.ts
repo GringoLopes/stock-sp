@@ -20,7 +20,10 @@ export class SupabaseAuthRepository implements AuthRepository {
       const user: User = {
         id: data.id,
         name: data.name,
-        role: data.role,
+        active: true,
+        is_admin: data.role === 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
 
       this.currentUser = user

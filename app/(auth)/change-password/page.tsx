@@ -14,12 +14,10 @@ import { useState } from "react"
 
 export default function ChangePasswordPage() {
   const router = useRouter()
-  const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -41,7 +39,7 @@ export default function ChangePasswordPage() {
 
       const result = await changePasswordUseCase.execute({
         userId: currentUser.id.toString(),
-        currentPassword,
+        currentPassword: "1234", // Senha padrão do sistema
         newPassword,
         confirmPassword,
       })
@@ -71,9 +69,9 @@ export default function ChangePasswordPage() {
               <Lock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Troca de Senha Obrigatória</CardTitle>
+          <CardTitle className="text-2xl text-center">Bem-vindo(a)! Crie sua senha</CardTitle>
           <CardDescription className="text-center">
-            Por segurança, você precisa trocar sua senha padrão antes de continuar.
+            Por segurança, você precisa criar uma nova senha para acessar o sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -85,29 +83,6 @@ export default function ChangePasswordPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Senha Atual</Label>
-              <div className="relative">
-                <Input
-                  id="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Digite sua senha atual"
-                  required
-                  autoFocus
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                >
-                  {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="newPassword">Nova Senha</Label>
               <div className="relative">
                 <Input
@@ -117,6 +92,7 @@ export default function ChangePasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Digite sua nova senha"
                   required
+                  autoFocus
                   className="pr-10"
                 />
                 <button
@@ -157,7 +133,6 @@ export default function ChangePasswordPage() {
                 <li>Mínimo de 6 caracteres</li>
                 <li>Pode conter letras e/ou números</li>
                 <li>Não pode ser igual à senha padrão (1234)</li>
-                <li>Deve ser diferente da senha atual</li>
               </ul>
             </div>
 
@@ -166,7 +141,7 @@ export default function ChangePasswordPage() {
               className="w-full" 
               disabled={loading}
             >
-              {loading ? "Alterando..." : "Alterar Senha"}
+              {loading ? "Criando..." : "Criar Nova Senha"}
             </Button>
           </form>
         </CardContent>

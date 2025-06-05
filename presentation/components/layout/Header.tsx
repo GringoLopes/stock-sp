@@ -1,11 +1,6 @@
 "use client"
 
-import {  useState } from "react"
-import { LogOut, Package, User, Upload, Search, ArrowRightLeft, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
-import { useRouter, usePathname } from "next/navigation"
-import Link from "next/link"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
+import { LogOut, Menu, Package, Search, Upload, User } from "lucide-react"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
 
 const menuItems = [
   {
@@ -29,13 +29,7 @@ const menuItems = [
     href: "/products/import",
     icon: Upload,
     adminOnly: true
-  },
-  {
-    title: "Importar Equivalências",
-    href: "/equivalences/import",
-    icon: ArrowRightLeft,
-    adminOnly: true
-  },
+  },  
 ]
 
 export function Header() {

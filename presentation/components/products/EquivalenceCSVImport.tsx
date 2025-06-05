@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,7 +7,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
-import { AlertCircle, CheckCircle, Copy, Download, FileText, Upload, X } from "lucide-react"
+import {
+  AlertCircle,
+  CheckCircle,
+  Copy,
+  Download,
+  FileText,
+  Upload,
+  X
+} from "lucide-react"
+import type React from "react"
 import { useRef, useState } from "react"
 
 interface ImportResult {
@@ -23,7 +30,15 @@ interface ImportResult {
   }
 }
 
-export function ProductCSVImport() {
+interface Equivalence {
+  productCode: string
+  equivalentCode: string
+  cleanProductCode?: string
+  cleanEquivalentCode?: string
+}
+
+export function EquivalenceCSVImport() {
+  // Estados para importação em massa
   const [file, setFile] = useState<File | null>(null)
   const [textData, setTextData] = useState("")
   const [importing, setImporting] = useState(false)
@@ -32,6 +47,12 @@ export function ProductCSVImport() {
   const [preview, setPreview] = useState<any[]>([])
   const [showPreview, setShowPreview] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Estados para gerenciamento individual
+  const [productCode, setProductCode] = useState("")
+  const [equivalentCode, setEquivalentCode] = useState("")
+  const [loading, setLoading] = useState(false)
+
   const { toast } = useToast()
 
   // Função para tentar decodificar o arquivo em diferentes codificações
@@ -54,11 +75,17 @@ export function ProductCSVImport() {
     }
   }
 
+  const detectSeparator = (text: string): ";" | "," => {
+    const firstLine = text.split("\n")[0] || ""
+    const semicolonCount = (firstLine.match(/;/g) || []).length
+    const commaCount = (firstLine.match(/,/g) || []).length
+    
+    return semicolonCount >= commaCount ? ";" : ","
+  }
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0]
-    if (!selectedFile) {
-      return
-    }
+    if (!selectedFile) return
 
     // Verificar extensão do arquivo
     const fileName = selectedFile.name.toLowerCase()
@@ -73,7 +100,7 @@ export function ProductCSVImport() {
       return
     }
 
-    // Aumentando o limite para 50MB
+    // Verificar tamanho (50MB)
     if (selectedFile.size > 50 * 1024 * 1024) {
       toast({
         title: "Arquivo muito grande",
@@ -102,7 +129,7 @@ export function ProductCSVImport() {
         return
       }
 
-      // Verificar se tem o formato esperado (pelo menos uma linha com separadores)
+      // Verificar se tem o formato esperado
       const firstLine = content.split("\n")[0]
       if (!firstLine.includes(";") && !firstLine.includes(",")) {
         toast({
@@ -114,8 +141,6 @@ export function ProductCSVImport() {
       }
 
       const lines = content.split("\n").filter(line => line.trim())
-
-      // Processar apenas as primeiras linhas para preview
       setTextData(content)
       processPreview(content)
 
@@ -136,24 +161,38 @@ export function ProductCSVImport() {
   const processPreview = (text: string) => {
     try {
       const lines = text.split("\n").filter((line) => line.trim())
+      const separator = detectSeparator(text)
       
-      const previewData = lines.slice(0, 10).map((line, index) => { // Aumentando para 10 linhas no preview
-        const parts = line.split(detectSeparator(text))
-        
-        // Limpar e processar o código do produto
-        const productCode = parts[0]?.trim().replace(/"/g, "")
+      const previewData = lines.slice(0, 5).map((line, index) => {
+        const parts = line.split(separator)
+        const productCode = parts[0]?.trim().replace(/"/g, "") || ""
+        const equivalentCode = parts[1]?.trim().replace(/"/g, "") || ""
+
         const cleanProductCode = productCode
-          .replace(/\s*\([^)]*\)/g, "") // Remove parênteses e seu conteúdo
-          .replace(/\s+.*$/, "") // Remove tudo após o primeiro espaço
-          .replace(/\.$/, "") // Remove ponto final se existir
+          .trim()
+          .replace(/\s*\([^)]*\)/g, "")
+          .replace(/\s+.*$/, "")
+          .replace(/\.$/, "")
+          .replace(/[^\w\-\/.@#]+/g, "")
+          .replace(/^[^a-zA-Z0-9]+/, "")
+          .replace(/[^a-zA-Z0-9]+$/, "")
+
+        const cleanEquivalentCode = equivalentCode
+          .trim()
+          .replace(/\s*\([^)]*\)/g, "")
+          .replace(/\s+.*$/, "")
+          .replace(/\.$/, "")
+          .replace(/[^\w\-\/.@#]+/g, "")
+          .replace(/^[^a-zA-Z0-9]+/, "")
+          .replace(/[^a-zA-Z0-9]+$/, "")
 
         return {
           linha: index + 1,
-          product: productCode || "",
-          stock: parts[1]?.trim().replace(/"/g, "") || "0",
-          price: parts[2]?.trim().replace(/"/g, "").replace(",", ".").replace(/;$/, "") || "0", // Remove ; do final
-          application: parts[3]?.trim().replace(/"/g, "") || "",
-          cleanCode: cleanProductCode
+          productCode,
+          equivalentCode,
+          cleanProductCode,
+          cleanEquivalentCode,
+          hasChanges: productCode !== cleanProductCode || equivalentCode !== cleanEquivalentCode
         }
       })
       setPreview(previewData)
@@ -162,84 +201,92 @@ export function ProductCSVImport() {
     }
   }
 
-  const detectSeparator = (text: string): ";" | "," => {
-    const firstLine = text.split("\n")[0] || ""
-    const semicolonCount = (firstLine.match(/;/g) || []).length
-    const commaCount = (firstLine.match(/,/g) || []).length
-    
-    return semicolonCount >= commaCount ? ";" : ","
-  }
-
-  const parseCSVData = (text: string): any[] => {
+  const parseCSVData = (text: string): Equivalence[] => {
     const lines = text.split("\n").filter((line) => line.trim())
-    const actualSeparator = detectSeparator(text)
-    
+    const separator = detectSeparator(text)
+
     return lines.map((line, index) => {
-      const parts = line.split(actualSeparator)
-      
-      // Limpar e processar o código do produto
+      const parts = line.split(separator)
+
+      if (parts.length < 2) {
+        throw new Error(`Linha ${index + 1}: Formato inválido. Esperado: código_produto${separator}código_equivalente`)
+      }
+
       const productCode = parts[0]?.trim().replace(/"/g, "") || ""
+      const equivalentCode = parts[1]?.trim().replace(/"/g, "") || ""
+
+      // Limpeza básica dos códigos
       const cleanProductCode = productCode
+        .trim()
         .replace(/\s*\([^)]*\)/g, "") // Remove parênteses e seu conteúdo
         .replace(/\s+.*$/, "") // Remove tudo após o primeiro espaço
         .replace(/\.$/, "") // Remove ponto final se existir
+        .replace(/[\x00-\x1F\x7F]+/g, "") // Remove caracteres de controle
+        .replace(/^\s+|\s+$/g, "") // Remove espaços no início e fim
 
-      // Processar preço: remover ponto e vírgula do final e converter
-      const price = parts[2]?.trim().replace(/"/g, "").replace(",", ".").replace(/;$/, "") || "0"
+      const cleanEquivalentCode = equivalentCode
+        .trim()
+        .replace(/\s*\([^)]*\)/g, "")
+        .replace(/\s+.*$/, "")
+        .replace(/\.$/, "")
+        .replace(/[\x00-\x1F\x7F]+/g, "")
+        .replace(/^\s+|\s+$/g, "")
 
       return {
-        product: productCode,
-        stock: parts[1]?.trim().replace(/"/g, "") || "0",
-        price: price,
-        application: parts[3]?.trim().replace(/"/g, "") || "",
-        cleanCode: cleanProductCode
+        productCode,
+        equivalentCode,
+        cleanProductCode,
+        cleanEquivalentCode
       }
     })
   }
 
-  const validateRow = (row: any, index: number): string | null => {
-    // Validar produto
-    if (!row.product || row.product.trim() === "") {
-      return `Linha ${index + 1}: Nome do produto é obrigatório`
+  const validateEquivalence = (eq: Equivalence, index?: number): string | null => {
+    // Função auxiliar para limpar e validar códigos
+    const cleanAndValidateCode = (code: string, fieldName: string): string | null => {
+      if (!code || code.trim() === "") {
+        return index !== undefined 
+          ? `Linha ${index + 1}: ${fieldName} é obrigatório`
+          : `${fieldName} é obrigatório`
+      }
+
+      // Limpeza básica do código
+      const cleanCode = code.trim()
+        .replace(/\s*\([^)]*\)/g, "") // Remove parênteses e seu conteúdo
+        .replace(/\s+.*$/, "") // Remove tudo após o primeiro espaço
+        .replace(/\.$/, "") // Remove ponto final se existir
+        .replace(/[\x00-\x1F\x7F]+/g, "") // Remove caracteres de controle
+        .replace(/^\s+|\s+$/g, "") // Remove espaços no início e fim
+
+      // Única validação: não pode ficar vazio após limpeza
+      if (cleanCode.length === 0) {
+        return index !== undefined
+          ? `Linha ${index + 1}: ${fieldName} ficou vazio após limpeza`
+          : `${fieldName} ficou vazio após limpeza`
+      }
+
+      return null
     }
 
-    if (row.product.length > 255) {
-      return `Linha ${index + 1}: Nome do produto não pode exceder 255 caracteres`
-    }   
+    // Validar código do produto
+    const productCodeError = cleanAndValidateCode(eq.productCode, "Código do produto")
+    if (productCodeError) return productCodeError
 
-    // Validar preço
-    const price = Number.parseFloat(row.price)
-    if (isNaN(price)) {
-      return `Linha ${index + 1}: Preço deve ser um número válido (${row.price})`
-    }
-    if (price < 0) {
-      return `Linha ${index + 1}: Preço não pode ser negativo`
-    }
-    if (price > 99999999.99) {
-      return `Linha ${index + 1}: Preço não pode exceder R$ 99.999.999,99`
-    }
+    // Validar código equivalente
+    const equivalentCodeError = cleanAndValidateCode(eq.equivalentCode, "Código equivalente")
+    if (equivalentCodeError) return equivalentCodeError
 
-    // Validar estoque
-    const stock = Number.parseInt(row.stock)
-    if (isNaN(stock)) {
-      return `Linha ${index + 1}: Estoque deve ser um número inteiro válido (${row.stock})`
-    }
-    if (stock < 0) {
-      return `Linha ${index + 1}: Estoque não pode ser negativo`
-    }
-    if (stock > 2147483647) {
-      return `Linha ${index + 1}: Estoque não pode exceder 2.147.483.647`
-    }
-
-    // Validar aplicação (opcional)
-    if (row.application && row.application.length > 1000) {
-      return `Linha ${index + 1}: Aplicação não pode exceder 1000 caracteres`
+    // Validar se os códigos são diferentes
+    if (eq.productCode.trim() === eq.equivalentCode.trim()) {
+      return index !== undefined
+        ? `Linha ${index + 1}: Código do produto e código equivalente não podem ser iguais`
+        : "Código do produto e código equivalente não podem ser iguais"
     }
 
     return null
   }
 
-  const importProducts = async () => {
+  const importEquivalences = async () => {
     if (!textData.trim()) {
       toast({
         title: "Dados vazios",
@@ -256,7 +303,7 @@ export function ProductCSVImport() {
     try {
       const rows = parseCSVData(textData)
       const errors: string[] = []
-      const validRows: any[] = []
+      const validRows: Equivalence[] = []
       let processedCount = 0
       const errorDetails = {
         invalidCodes: [] as { line: number; code: string; original: string }[],
@@ -265,14 +312,14 @@ export function ProductCSVImport() {
 
       // Validar dados
       for (const row of rows) {
-        const error = validateRow(row, processedCount)
+        const error = validateEquivalence(row, processedCount)
         if (error) {
           errors.push(error)
           if (error.includes("caracteres inválidos")) {
             errorDetails.invalidCodes.push({
               line: processedCount + 1,
-              code: row.cleanCode,
-              original: row.product
+              code: row.productCode,
+              original: row.productCode
             })
           } else {
             errorDetails.otherErrors.push({
@@ -282,10 +329,10 @@ export function ProductCSVImport() {
           }
         } else {
           validRows.push({
-            product: row.product.trim(),
-            stock: Math.min(Number.parseInt(row.stock) || 0, 2147483647),
-            price: Math.min(Number.parseFloat(row.price) || 0.0, 99999999.99),
-            application: row.application || null,
+            productCode: row.productCode.trim(),
+            equivalentCode: row.equivalentCode.trim(),
+            cleanProductCode: row.cleanProductCode,
+            cleanEquivalentCode: row.cleanEquivalentCode
           })
         }
         processedCount++
@@ -300,20 +347,27 @@ export function ProductCSVImport() {
         return
       }
 
-      // Importar em lotes maiores para arquivos grandes
-      const batchSize = 1000 // Aumentando o tamanho do lote
+      // Importar em lotes
+      const batchSize = 500
       let successCount = 0
 
       for (let i = 0; i < validRows.length; i += batchSize) {
         const batch = validRows.slice(i, i + batchSize)
 
         try {
-          const response = await fetch("/api/products/import", {
+          const response = await fetch("/api/equivalences/import", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ products: batch }),
+            body: JSON.stringify({ 
+              equivalences: batch.map(eq => ({
+                product_code: eq.cleanProductCode || eq.productCode.trim(),
+                equivalent_code: eq.cleanEquivalentCode || eq.equivalentCode.trim(),
+                original_product_code: eq.productCode.trim(),
+                original_equivalent_code: eq.equivalentCode.trim()
+              }))
+            }),
           })
 
           if (response.ok) {
@@ -322,12 +376,20 @@ export function ProductCSVImport() {
           } else {
             const errorData = await response.json()
             errors.push(`Lote ${Math.floor(i / batchSize) + 1}: ${errorData.error}`)
+            errorDetails.otherErrors.push({
+              line: i + 1,
+              error: `Erro no lote ${Math.floor(i / batchSize) + 1}: ${errorData.error}`
+            })
           }
         } catch (error) {
-          errors.push(`Lote ${Math.floor(i / batchSize) + 1}: Erro de conexão`)
+          const errorMessage = `Lote ${Math.floor(i / batchSize) + 1}: Erro de conexão`
+          errors.push(errorMessage)
+          errorDetails.otherErrors.push({
+            line: i + 1,
+            error: errorMessage
+          })
         }
 
-        // Atualizar progresso da importação (50-100%)
         setProgress(50 + Math.round(((i + batchSize) / validRows.length) * 50))
       }
 
@@ -338,10 +400,12 @@ export function ProductCSVImport() {
         errorDetails
       })
 
-      toast({
-        title: "Importação concluída",
-        description: `${successCount.toLocaleString()} produtos importados com sucesso.`,
-      })
+      if (successCount > 0) {
+        toast({
+          title: "Importação concluída",
+          description: `${successCount.toLocaleString()} equivalências importadas com sucesso.`,
+        })
+      }
     } catch (error) {
       toast({
         title: "Erro na importação",
@@ -357,14 +421,16 @@ export function ProductCSVImport() {
   const downloadTemplate = () => {
     const actualSeparator = textData ? detectSeparator(textData) : ";" as const
     const templates = {
-      ";": `011338 ENCOMENDA PEDRACON;0;231;
-06211700 (KR27004);0;0;
-06211718 (KR20014);0;0;
-0986B01907;0;0;`,
-      ",": `"011338 ENCOMENDA PEDRACON",0,231,
-"06211700 (KR27004)",0,0,
-"06211718 (KR20014)",0,0,
-"0986B01907",0,0,`
+      ";": `2040PM-OR;FCD0732
+2040PM-OR;ALT0001
+13E;EQV13E
+14E;EQV14E
+0986B03526;ALT0986B`,
+      ",": `"2040PM-OR","FCD0732"
+"2040PM-OR","ALT0001"
+"13E","EQV13E"
+"14E","EQV14E"
+"0986B03526","ALT0986B"`
     } as const
 
     const template = templates[actualSeparator]
@@ -375,7 +441,7 @@ export function ProductCSVImport() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `template-produtos.${extension}`
+    a.download = `template-equivalencias.${extension}`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -396,20 +462,84 @@ export function ProductCSVImport() {
     }
   }
 
+  // Funções para gerenciamento individual
+  const handleAddEquivalence = async () => {
+    const equivalence = { productCode, equivalentCode }
+    const error = validateEquivalence(equivalence)
+    
+    if (error) {
+      toast({
+        title: "Campos inválidos",
+        description: error,
+        variant: "destructive",
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch("/api/equivalences/import", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          equivalences: [{
+            product_code: productCode.trim(),
+            equivalent_code: equivalentCode.trim()
+          }]
+        }),
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Equivalência adicionada",
+          description: `Equivalência entre ${productCode} e ${equivalentCode} criada com sucesso.`,
+        })
+        setProductCode("")
+        setEquivalentCode("")
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error)
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: `Erro ao adicionar equivalência: ${error}`,
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const clearImportForm = () => {
+    setFile(null)
+    setTextData("")
+    setResult(null)
+    setPreview([])
+    setShowPreview(false)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
   return (
-    <Card>      
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Upload className="h-5 w-5" />
-          Importar Produtos
+          Importar Equivalências
         </CardTitle>
         <CardDescription>
-          Importe produtos em massa usando arquivos CSV ou TXT. Suporta arquivos grandes e diferentes formatos.
+          Importe equivalências em massa usando arquivos CSV ou TXT. Suporta arquivos grandes e diferentes formatos.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">    
+      <CardContent className="space-y-4">        
         <div className="flex justify-between items-center">
-          <p className="text-sm text-gray-600">Importe produtos no formato CSV/TXT</p>
+          <p className="text-sm text-gray-600">
+            Importe equivalências no formato CSV/TXT
+          </p>
           <Button variant="outline" size="sm" onClick={downloadTemplate}>
             <Download className="h-4 w-4 mr-2" />
             Baixar Template
@@ -442,16 +572,22 @@ export function ProductCSVImport() {
 
             {showPreview && (
               <div className="border rounded p-3 bg-gray-50 text-sm">
-                <div className="font-semibold mb-2">
-                  <span>Preview dos dados:</span>
-                </div>
+                <div className="font-semibold mb-2">Preview dos dados:</div>
                 {preview.map((item, index) => (
                   <div key={index} className="mb-1 font-mono text-xs">
                     <strong>Linha {item.linha}:</strong> 
-                    <span className="text-blue-600">{item.product}</span> |
-                    Estoque: <span className={isNaN(Number(item.stock)) ? "text-red-500" : ""}>{item.stock}</span> | 
-                    Preço: <span className={isNaN(Number(item.price.replace(",", "."))) ? "text-red-500" : ""}>{item.price}</span> |
-                    Aplicação: {item.application || "N/A"}
+                    <span className="text-blue-600">
+                      {item.productCode}
+                      {item.hasChanges && item.cleanProductCode !== item.productCode && (
+                        <span className="text-green-600"> → {item.cleanProductCode}</span>
+                      )}
+                    </span> → 
+                    <span className="text-blue-600">
+                      {item.equivalentCode}
+                      {item.hasChanges && item.cleanEquivalentCode !== item.equivalentCode && (
+                        <span className="text-green-600"> → {item.cleanEquivalentCode}</span>
+                      )}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -462,7 +598,7 @@ export function ProductCSVImport() {
         {importing && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Importando produtos...</span>
+              <span>Importando equivalências...</span>
               <span>{progress}%</span>
             </div>
             <Progress value={progress} />
@@ -523,10 +659,10 @@ export function ProductCSVImport() {
                     <div className="mt-4 text-sm">
                       <p className="font-semibold">Sugestões para correção:</p>
                       <ul className="list-disc pl-4 space-y-1 text-sm">
-                        <li>Verifique se os códigos com caracteres especiais estão corretos</li>
-                        <li>Remova caracteres especiais não permitidos (permitidos: letras, números, hífen, ponto e barra)</li>
-                        <li>Verifique se os valores de estoque e preço são números válidos</li>
-                        <li>Certifique-se de que os campos obrigatórios estão preenchidos</li>
+                        <li>Verifique se os códigos não estão vazios após a limpeza</li>
+                        <li>Verifique se os códigos são diferentes entre si</li>
+                        <li>Certifique-se de que não há linhas em branco no arquivo</li>
+                        <li>Verifique se o arquivo está usando o formato correto (código;equivalente)</li>
                       </ul>
                     </div>
                   </>
@@ -546,16 +682,7 @@ export function ProductCSVImport() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setFile(null)
-                  setTextData("")
-                  setResult(null)
-                  setPreview([])
-                  setShowPreview(false)
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = ""
-                  }
-                }}
+                onClick={clearImportForm}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -564,21 +691,12 @@ export function ProductCSVImport() {
         )}
 
         <div className="flex gap-2">
-          <Button onClick={importProducts} disabled={!textData.trim() || importing} className="flex-1">
-            {importing ? "Importando..." : "Importar Produtos"}
+          <Button onClick={importEquivalences} disabled={!textData.trim() || importing} className="flex-1">
+            {importing ? "Importando..." : "Importar Equivalências"}
           </Button>
           <Button
             variant="outline"
-            onClick={() => {
-              setFile(null)
-              setTextData("")
-              setResult(null)
-              setPreview([])
-              setShowPreview(false)
-              if (fileInputRef.current) {
-                fileInputRef.current.value = ""
-              }
-            }}
+            onClick={clearImportForm}
             disabled={importing}
           >
             Limpar

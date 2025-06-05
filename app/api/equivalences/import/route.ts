@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,7 @@ export async function POST(request: NextRequest) {
         throw new Error(`Linha ${index + 1}: Ambos os códigos são obrigatórios`)
       }
 
-      if (eq.product_code === eq.equivalent_code) {
-        throw new Error(`Linha ${index + 1}: Códigos não podem ser iguais`)
-      }
+      
 
       return {
         product_code: eq.product_code.trim(),

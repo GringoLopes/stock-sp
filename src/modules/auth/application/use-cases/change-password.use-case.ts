@@ -36,27 +36,11 @@ export class ChangePasswordUseCase implements UseCase<ChangePasswordRequest, Cha
         }
       }
 
-      // Validação de força da senha (6 caracteres conforme o script SQL)
+      // Validação de tamanho mínimo
       if (newPassword.length < 6) {
         return {
           success: false,
-          error: new Error("A senha deve ter no mínimo 8 caracteres"),
-        }
-      }
-
-      // Validação contra senha padrão
-      if (newPassword === "1234") {
-        return {
-          success: false,
-          error: new Error("A nova senha não pode ser igual à senha padrão"),
-        }
-      }
-
-      // Validação se é diferente da atual
-      if (currentPassword === newPassword) {
-        return {
-          success: false,
-          error: new Error("A nova senha deve ser diferente da senha atual"),
+          error: new Error("A senha deve ter no mínimo 6 caracteres"),
         }
       }
 

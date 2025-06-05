@@ -128,11 +128,9 @@ export default function ChangePasswordPage() {
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md text-sm text-blue-700 dark:text-blue-300">
-              <p className="font-semibold mb-1">Requisitos da senha:</p>
+              <p className="font-semibold mb-1">Requisito da senha:</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Mínimo de 6 caracteres</li>
-                <li>Pode conter letras e/ou números</li>
-                <li>Não pode ser igual à senha padrão (1234)</li>
+                <li>Mínimo de 6 caracteres (pode conter números e/ou letras)</li>
               </ul>
             </div>
 

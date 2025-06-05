@@ -168,31 +168,22 @@ export function EquivalenceCSVImport() {
         const productCode = parts[0]?.trim().replace(/"/g, "") || ""
         const equivalentCode = parts[1]?.trim().replace(/"/g, "") || ""
 
-        const cleanProductCode = productCode
-          .trim()
-          .replace(/\s*\([^)]*\)/g, "")
-          .replace(/\s+.*$/, "")
-          .replace(/\.$/, "")
-          .replace(/[^\w\-\/.@#]+/g, "")
-          .replace(/^[^a-zA-Z0-9]+/, "")
-          .replace(/[^a-zA-Z0-9]+$/, "")
+        const equivalence: Equivalence = {
+          productCode,
+          equivalentCode
+        }
 
-        const cleanEquivalentCode = equivalentCode
-          .trim()
-          .replace(/\s*\([^)]*\)/g, "")
-          .replace(/\s+.*$/, "")
-          .replace(/\.$/, "")
-          .replace(/[^\w\-\/.@#]+/g, "")
-          .replace(/^[^a-zA-Z0-9]+/, "")
-          .replace(/[^a-zA-Z0-9]+$/, "")
+        // Usar a mesma lógica de validação
+        const validationError = validateEquivalence(equivalence, index)
 
         return {
           linha: index + 1,
           productCode,
           equivalentCode,
-          cleanProductCode,
-          cleanEquivalentCode,
-          hasChanges: productCode !== cleanProductCode || equivalentCode !== cleanEquivalentCode
+          cleanProductCode: equivalence.cleanProductCode || "",
+          cleanEquivalentCode: equivalence.cleanEquivalentCode || "",
+          hasChanges: productCode !== equivalence.cleanProductCode || equivalentCode !== equivalence.cleanEquivalentCode,
+          error: validationError
         }
       })
       setPreview(previewData)
@@ -243,45 +234,52 @@ export function EquivalenceCSVImport() {
 
   const validateEquivalence = (eq: Equivalence, index?: number): string | null => {
     // Função auxiliar para limpar e validar códigos
-    const cleanAndValidateCode = (code: string, fieldName: string): string | null => {
+    const cleanAndValidateCode = (code: string, fieldName: string): { error: string | null; cleanCode: string } => {
       if (!code || code.trim() === "") {
-        return index !== undefined 
-          ? `Linha ${index + 1}: ${fieldName} é obrigatório`
-          : `${fieldName} é obrigatório`
+        return {
+          error: index !== undefined 
+            ? `Linha ${index + 1}: ${fieldName} está vazio`
+            : `${fieldName} está vazio`,
+          cleanCode: ""
+        }
       }
 
-      // Limpeza básica do código
-      const cleanCode = code.trim()
-        .replace(/\s*\([^)]*\)/g, "") // Remove parênteses e seu conteúdo
-        .replace(/\s+.*$/, "") // Remove tudo após o primeiro espaço
-        .replace(/\.$/, "") // Remove ponto final se existir
+      // Limpeza menos restritiva do código
+      let cleanCode = code.trim()
         .replace(/[\x00-\x1F\x7F]+/g, "") // Remove caracteres de controle
         .replace(/^\s+|\s+$/g, "") // Remove espaços no início e fim
 
-      // Única validação: não pode ficar vazio após limpeza
+      // Se ainda houver caracteres após limpeza básica, mantenha-os
       if (cleanCode.length === 0) {
-        return index !== undefined
-          ? `Linha ${index + 1}: ${fieldName} ficou vazio após limpeza`
-          : `${fieldName} ficou vazio após limpeza`
+        return {
+          error: index !== undefined
+            ? `Linha ${index + 1}: ${fieldName} ficou vazio após limpeza. Original: "${code}"`
+            : `${fieldName} ficou vazio após limpeza. Original: "${code}"`,
+          cleanCode: ""
+        }
       }
 
-      return null
+      return { error: null, cleanCode }
     }
 
     // Validar código do produto
-    const productCodeError = cleanAndValidateCode(eq.productCode, "Código do produto")
-    if (productCodeError) return productCodeError
+    const productResult = cleanAndValidateCode(eq.productCode, "Código do produto")
+    if (productResult.error) return productResult.error
 
     // Validar código equivalente
-    const equivalentCodeError = cleanAndValidateCode(eq.equivalentCode, "Código equivalente")
-    if (equivalentCodeError) return equivalentCodeError
+    const equivalentResult = cleanAndValidateCode(eq.equivalentCode, "Código equivalente")
+    if (equivalentResult.error) return equivalentResult.error
 
-    // Validar se os códigos são diferentes
-    if (eq.productCode.trim() === eq.equivalentCode.trim()) {
+    // Validar se os códigos são diferentes (mas apenas se forem exatamente iguais)
+    if (productResult.cleanCode === equivalentResult.cleanCode) {
       return index !== undefined
-        ? `Linha ${index + 1}: Código do produto e código equivalente não podem ser iguais`
-        : "Código do produto e código equivalente não podem ser iguais"
+        ? `Linha ${index + 1}: Código do produto e código equivalente são idênticos (${productResult.cleanCode})`
+        : `Código do produto e código equivalente são idênticos (${productResult.cleanCode})`
     }
+
+    // Atualizar os códigos limpos na equivalência
+    eq.cleanProductCode = productResult.cleanCode
+    eq.cleanEquivalentCode = equivalentResult.cleanCode
 
     return null
   }
@@ -574,20 +572,25 @@ export function EquivalenceCSVImport() {
               <div className="border rounded p-3 bg-gray-50 text-sm">
                 <div className="font-semibold mb-2">Preview dos dados:</div>
                 {preview.map((item, index) => (
-                  <div key={index} className="mb-1 font-mono text-xs">
+                  <div key={index} className={`mb-2 font-mono text-xs ${item.error ? 'border-l-2 border-red-500 pl-2' : ''}`}>
                     <strong>Linha {item.linha}:</strong> 
-                    <span className="text-blue-600">
+                    <span className={`${item.error ? 'text-red-600' : 'text-blue-600'}`}>
                       {item.productCode}
                       {item.hasChanges && item.cleanProductCode !== item.productCode && (
                         <span className="text-green-600"> → {item.cleanProductCode}</span>
                       )}
                     </span> → 
-                    <span className="text-blue-600">
+                    <span className={`${item.error ? 'text-red-600' : 'text-blue-600'}`}>
                       {item.equivalentCode}
                       {item.hasChanges && item.cleanEquivalentCode !== item.equivalentCode && (
                         <span className="text-green-600"> → {item.cleanEquivalentCode}</span>
                       )}
                     </span>
+                    {item.error && (
+                      <div className="text-red-500 mt-1">
+                        Erro: {item.error}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

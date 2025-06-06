@@ -86,6 +86,7 @@ export function Header() {
                   {filteredMenuItems.map((item) => {
                     const isActive = pathname === item.href
                     const Icon = item.icon
+                    
 
                     return (
                       <Link

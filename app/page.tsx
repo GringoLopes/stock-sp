@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
-import { Loader2 } from "lucide-react"
+import { LoadingSpinner } from "@/src/shared/presentation/components/ui/loading-spinner"
 
 export default function HomePage() {
   const { user, loading } = useAuth()
@@ -22,7 +22,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

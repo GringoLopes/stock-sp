@@ -2,57 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  /* Responsive Grid Utilities */
-  .responsive-grid {
-    @apply grid gap-4;
-    @apply grid-cols-1;
-    @apply sm:grid-cols-2;
-    @apply lg:grid-cols-3;
-    @apply xl:grid-cols-4;
-  }
-
-  /* Responsive Container */
-  .container-responsive {
-    @apply w-full mx-auto px-4;
-    @apply sm:px-6;
-    @apply lg:px-8;
-    max-width: 100%;
-    @apply sm:max-w-[640px];
-    @apply md:max-w-[768px];
-    @apply lg:max-w-[1024px];
-    @apply xl:max-w-[1280px];
-    @apply 2xl:max-w-[1536px];
-  }
-
-  /* Responsive Text */
-  .text-responsive {
-    @apply text-sm;
-    @apply sm:text-base;
-    @apply lg:text-lg;
-  }
-
-  /* Responsive Spacing */
-  .spacing-responsive {
-    @apply p-4;
-    @apply sm:p-6;
-    @apply lg:p-8;
-  }
-
-  /* Responsive Flex Column to Row */
-  .flex-responsive {
-    @apply flex flex-col;
-    @apply sm:flex-row;
   }
 }
 
@@ -92,6 +44,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -132,7 +85,9 @@ body {
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: Arial, Helvetica, sans-serif;
   }
 }

@@ -6,7 +6,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Search, X, Loader2 } from "lucide-react"
+import { LoadingSpinner } from "@/src/shared/presentation/components/ui/loading-spinner"
+import { Search, X } from "lucide-react"
 
 interface ProductSearchFormProps {
   onSearch: (query: string) => void
@@ -78,7 +79,7 @@ export function ProductSearchForm({ onSearch, onClear, isLoading, currentQuery }
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <LoadingSpinner size="sm" className="mr-2" />
                   Buscando...
                 </>
               ) : (

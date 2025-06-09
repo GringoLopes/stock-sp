@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
-import { Loader2, Package, User } from "lucide-react"
+import { LoadingSpinner } from "@/src/shared/presentation/components/ui/loading-spinner"
+import { Package, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useState } from "react"
@@ -121,7 +122,7 @@ export default function LoginPage() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <LoadingSpinner size="sm" className="mr-2" />
                   Entrando...
                 </>
               ) : (

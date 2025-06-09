@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { cn } from "@/lib/utils"
+import { cn } from "@/src/shared/presentation/lib/utils"
 import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { LogOut, Menu, Package, Search, Upload, User } from "lucide-react"
 import Link from "next/link"

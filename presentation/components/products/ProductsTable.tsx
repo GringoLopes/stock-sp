@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LoadingSpinner } from "@/src/shared/presentation/components/ui/loading-spinner"
 import { Search, AlertCircle, Package } from "lucide-react"
 import type { ProductWithEquivalences } from "@/src/modules/inventory/domain/entities/product-with-equivalences.entity"
 
@@ -61,7 +62,7 @@ export function ProductsTable({ products, loading, hasSearched, searchQuery, err
           <div className="space-y-4">
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <LoadingSpinner size="lg" className="mx-auto mb-4" />
                 <p className="text-gray-600">Buscando produtos...</p>
               </div>
             </div>

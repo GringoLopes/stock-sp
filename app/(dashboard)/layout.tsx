@@ -3,7 +3,7 @@
 import { Header } from "@/presentation/components/layout/Header"
 import { useAuth } from "@/src/modules/auth/presentation/providers/auth.provider"
 import { SessionManager } from "@/src/shared/infrastructure/session/session-manager"
-import { Loader2 } from "lucide-react"
+import { LoadingSpinner } from "@/src/shared/presentation/components/ui/loading-spinner"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import { useEffect } from "react"
@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

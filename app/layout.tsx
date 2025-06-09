@@ -1,7 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
+import { Inter } from "next/font/google"
 import ClientLayout from "./client-layout"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Santos & Penedo e Cia LTDA",
@@ -23,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>
+      <body className={inter.className}>
         <ClientLayout>
           {children}
         </ClientLayout>

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/src/shared/presentation/lib/utils"
 import * as React from "react"
 
 const VisuallyHidden = React.forwardRef<
